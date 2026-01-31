@@ -22,14 +22,9 @@ const db = firebase.database();
 // --- DATA & CONFIG ---
 const STAGES = [1, 2, 3, 4];
 
-const COURSES_BY_STAGE = {
-    1: ['GESTÃO DE RECURSOS HUMANOS', 'GESTÃO COMERCIAL', 'LOGÍSTICA', 'GESTÃO COMERCIAL/MARKETING', 'PROCESSOS GERENCIAIS', 'GESTÃO FINANCEIRA'],
-    2: ['PROCESSOS GERENCIAIS', 'GESTÃO COMERCIAL', 'GESTÃO DE RECURSOS HUMANOS', 'MARKETING', 'GESTÃO FINANCEIRA'],
-    3: ['GESTÃO FINANCEIRA', 'MARKETING', 'GESTÃO COMERCIAL', 'GESTÃO DE RECURSOS HUMANOS', 'PROCESSOS GERENCIAIS', 'GESTÃO COMERCIAL/MARKETING'],
-    4: ['GESTÃO FINANCEIRA', 'GESTÃO COMERCIAL', 'GESTÃO COMERCIAL/GESTÃO FINANCEIRA', 'GESTÃO COMERCIAL/MARKETING', 'GESTÃO DE RECURSOS HUMANOS', 'MARKETING', 'PROCESSOS GERENCIAIS']
-};
-
-const SUBJECTS_DB = {
+// --- ACADEMIC GRID (Internal Data Structure) ---
+// Interlinked "Grids": Stage -> Course -> [Subject/Professor]
+const ACADEMIC_GRID = {
     1: {
         'GESTÃO DE RECURSOS HUMANOS': [{ subject: 'CLIMA ORGANIZACIONAL', teacher: 'ALMIR MARTINS VIEIRA' }],
         'GESTÃO COMERCIAL': [{ subject: 'DIREITOS DO CONSUMIDOR', teacher: 'FABIO DANIEL ROMANELLO VASQUES' }],
@@ -140,6 +135,11 @@ const SUBJECTS_DB = {
     }
 };
 
+// Derived Tables (Backward Compatibility)
+const COURSES_BY_STAGE = {};
+Object.keys(ACADEMIC_GRID).forEach(s => COURSES_BY_STAGE[s] = Object.keys(ACADEMIC_GRID[s]));
+const SUBJECTS_DB = ACADEMIC_GRID;
+
 // Fallback: If no subjects found for a stage, use Generic list
 const GENERIC_SUBJECTS = {
     'GESTÃO DE RECURSOS HUMANOS': [{ subject: 'CLIMA ORGANIZACIONAL', teacher: 'ALMIR MARTINS VIEIRA' }],
@@ -171,15 +171,6 @@ const COMMON_SUBJECTS = {
     ]
 };
 
-// --- SYNC CONFIG ---
-// Define subjects that should be synchronized across multiple stages
-const SYNC_CONFIG = [
-    {
-        courseName: 'GESTÃO COMERCIAL/MARKETING',
-        subject: 'DEFIN DE CONSUM E SEU COMPORTAMENTO',
-        stages: [1, 3]
-    }
-];
 
 // Expand Hours: 19:00 to 22:00
 const HOURS_START = 19;
@@ -222,16 +213,28 @@ const eventDate = document.getElementById('event-date');
 // Sync Elements
 const syncWrapper = document.getElementById('sync-ui-wrapper');
 const syncSelect = document.getElementById('sync-select');
+const syncExpandable = document.getElementById('sync-expandable');
 
 const deletePasswordInput = document.getElementById('delete-password');
 const passwordError = document.getElementById('password-error');
 const passwordModal = document.getElementById('password-modal');
+
+// Keys (Encoded to prevent direct F12 discovery)
+const _0x1a = 'Y2NzYW1hY2tlbnppZQ=='; // global
+const _0x1b = 'QW51bnppbw==';       // admin
+const _0x1c = 'bWFja2Vuemll';       // delete
 
 let editingSlot = null; // { dateStr, hourIdx }
 let pendingDeleteIdx = null;
 
 // --- INIT ---
 function init() {
+    // Check Global Access first
+    if (sessionStorage.getItem('mack_access') === 'granted') {
+        const modal = document.getElementById('global-access-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
     renderStageButtons();
     renderCalendar(); // Render immediately (don't wait for cloud)
     setupFirebaseListeners();
@@ -539,6 +542,7 @@ window.updateFormVisibility = function () {
 window.openEditModal = function (dateStr, hIdx) {
     editingSlot = { dateStr, hourIdx: hIdx };
     errorMsg.classList.add('hidden');
+    if (syncExpandable) syncExpandable.classList.add('hidden');
 
     const key = `${state.activeStage}-${dateStr}-${hIdx}`;
     const items = state.assignments[key] || [];
@@ -623,20 +627,27 @@ function checkSyncRequirement() {
         return;
     }
 
-    const rule = SYNC_CONFIG.find(r => r.courseName === course && r.subject === subject && r.stages.includes(state.activeStage));
+    // Now available for ALL specific subjects
+    syncWrapper.classList.remove('hidden');
 
-    if (rule) {
-        syncWrapper.classList.remove('hidden');
-        const otherStages = rule.stages.filter(s => s !== state.activeStage);
+    let html = '<option value="none">Não (Apenas esta etapa)</option>';
+    html += '<option value="all">Sim (Todas as Etapas: 1, 2, 3 e 4)</option>';
 
-        let html = '<option value="none">Não (Apenas esta etapa)</option>';
-        otherStages.forEach(s => {
-            html += `<option value="${s}">Sim (Compartilhar com Etapa ${s})</option>`;
-        });
-        syncSelect.innerHTML = html;
-        lucide.createIcons();
+    STAGES.filter(s => s !== state.activeStage).forEach(s => {
+        html += `<option value="${s}">Sim (Compartilhar com Etapa ${s})</option>`;
+    });
+
+    syncSelect.innerHTML = html;
+    lucide.createIcons();
+}
+
+window.toggleSyncArea = function () {
+    if (!syncExpandable) return;
+    const isHidden = syncExpandable.classList.contains('hidden');
+    if (isHidden) {
+        syncExpandable.classList.remove('hidden');
     } else {
-        syncWrapper.classList.add('hidden');
+        syncExpandable.classList.add('hidden');
     }
 }
 
@@ -663,9 +674,24 @@ window.closePasswordModal = function () {
     pendingDeleteIdx = null;
 }
 
+window.checkGlobalAccess = function () {
+    const input = document.getElementById('global-password-input');
+    const error = document.getElementById('global-password-error');
+    const modal = document.getElementById('global-access-modal');
+
+    // Simple comparison with encoded key
+    if (btoa(input.value) === _0x1a) {
+        sessionStorage.setItem('mack_access', 'granted');
+        modal.classList.add('hidden');
+    } else {
+        error.classList.remove('hidden');
+        input.value = '';
+    }
+}
+
 window.checkPassword = function () {
     const password = deletePasswordInput.value;
-    if (password === 'mackenzie') {
+    if (btoa(password) === _0x1c) {
         executeDelete();
     } else {
         passwordError.classList.remove('hidden');
@@ -722,12 +748,6 @@ form.onsubmit = (e) => {
         courseName: (type === 'specific') ? courseSelect.value : null
     };
 
-    // Check Sharing selection
-    const targetSyncStage = syncSelect.value !== 'none' ? parseInt(syncSelect.value) : null;
-    if (targetSyncStage) {
-        newEntry.syncGroupId = Date.now().toString(); // Identificador único do espelhamento
-    }
-
     const key = `${state.activeStage}-${dateStr}-${hourIdx}`;
     if (!state.assignments[key]) state.assignments[key] = [];
     const currentItems = state.assignments[key];
@@ -770,10 +790,32 @@ form.onsubmit = (e) => {
     currentItems.push(newEntry);
 
     // --- SYNC ADDITION (Based on User Choice) ---
-    if (targetSyncStage) {
-        const syncKey = `${targetSyncStage}-${dateStr}-${hourIdx}`;
-        if (!state.assignments[syncKey]) state.assignments[syncKey] = [];
-        state.assignments[syncKey].push({ ...newEntry });
+    const syncValue = syncSelect.value;
+    if (syncValue !== 'none') {
+        newEntry.syncGroupId = Date.now().toString(); // Identificador único do espelhamento
+
+        let targetStages = [];
+        if (syncValue === 'all') {
+            targetStages = STAGES.filter(s => s !== state.activeStage);
+        } else {
+            targetStages = [parseInt(syncValue)];
+        }
+
+        targetStages.forEach(ts => {
+            const syncKey = `${ts}-${dateStr}-${hourIdx}`;
+            if (!state.assignments[syncKey]) state.assignments[syncKey] = [];
+
+            // Check for conflicts in the target stage before syncing
+            // We'll add it anyway but it might show overlapping in UI if conflicts exist.
+            // Usually we want to avoid double scheduling the same course.
+            const targetItems = state.assignments[syncKey];
+            const hasCourseConflict = targetItems.some(it => it.courseName === newEntry.courseName);
+            const hasCommonConflict = targetItems.some(it => it.type === 'common');
+
+            if (!hasCourseConflict && !hasCommonConflict) {
+                state.assignments[syncKey].push({ ...newEntry });
+            }
+        });
     }
 
     saveAssignments();
@@ -841,7 +883,7 @@ window.closeAdminLogin = function () {
 }
 
 window.checkAdminPassword = function () {
-    if (adminPasswordInput.value === 'Anunzio') {
+    if (btoa(adminPasswordInput.value) === _0x1b) {
         adminLoginModal.classList.add('hidden');
         openAdminSettings();
     } else {
