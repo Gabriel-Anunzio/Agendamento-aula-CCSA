@@ -13,8 +13,9 @@ const firebaseConfig = {
 // Initialize Firebase
 try {
     firebase.initializeApp(firebaseConfig);
+    console.log("Firebase inicializado com sucesso.");
 } catch (err) {
-    console.error("Erro ao inicializar Firebase:", err);
+    console.error("Erro crítico ao inicializar Firebase:", err);
 }
 const db = firebase.database();
 
@@ -253,27 +254,41 @@ function setupMobileSync() {
 function setupFirebaseListeners() {
     // Listen for Assignments
     db.ref('assignments').on('value', (snapshot) => {
+        console.log("Dados de agendamentos recebidos do Firebase:", snapshot.val());
         state.assignments = snapshot.val() || {};
         renderCalendar();
     }, (error) => {
-        console.error("Erro ao carregar agendamentos:", error);
+        console.error("Erro de PERMISSÃO ou CONEXÃO ao ler assignments:", error);
     });
 
     // Listen for Events
     db.ref('events').on('value', (snapshot) => {
+        console.log("Dados de eventos recebidos do Firebase:", snapshot.val());
         state.events = snapshot.val() || {};
         renderCalendar();
     }, (error) => {
-        console.error("Erro ao carregar eventos:", error);
+        console.error("Erro de PERMISSÃO ou CONEXÃO ao ler events:", error);
     });
 }
 
 function saveAssignments() {
-    db.ref('assignments').set(state.assignments);
+    console.log("Tentando salvar agendamentos...", state.assignments);
+    db.ref('assignments').set(state.assignments)
+        .then(() => console.log("Agendamentos salvos com sucesso!"))
+        .catch((err) => {
+            console.error("FALHA AO SALVAR AGENDAMENTOS:", err);
+            alert("Erro ao salvar no Firebase: " + err.message);
+        });
 }
 
 function saveEvents() {
-    db.ref('events').set(state.events);
+    console.log("Tentando salvar eventos...", state.events);
+    db.ref('events').set(state.events)
+        .then(() => console.log("Eventos salvos com sucesso!"))
+        .catch((err) => {
+            console.error("FALHA AO SALVAR EVENTOS:", err);
+            alert("Erro ao salvar evento: " + err.message);
+        });
 }
 
 // --- CORE RENDERING ---
