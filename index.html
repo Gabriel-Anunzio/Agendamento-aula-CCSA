@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento de Aulas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#CC181E', // Mackenzie Red
+                        secondary: '#991216', // Darker Red
+                        dark: '#1e293b', // Slate 800
+                        surface: '#f8fafc', // Slate 50
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDK (Compat version for easier integration) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(204, 24, 30, 0.5);
+            border-radius: 4px;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            grid-template-rows: auto;
+        }
+
+        .delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .item-row:hover .delete-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header
+        class="flex justify-between items-center p-4 border-b border-red-800 bg-[#CC181E] z-50 shadow-md text-white">
+        <div class="flex items-center gap-4">
+            <h1 class="text-xl font-bold text-white flex items-center gap-2">
+                <i data-lucide="calendar" class="text-white"></i>
+                Centro de Ciências Sociais Aplicadas
+            </h1>
+
+            <div class="h-6 w-px bg-red-400 mx-2"></div>
+
+            <!-- Stage Selector -->
+            <div class="flex bg-red-800/50 rounded-lg p-1 gap-1">
+                <button onclick="switchStage(1)" id="stage-btn-1"
+                    class="px-3 py-1 text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa 1</button>
+                <button onclick="switchStage(2)" id="stage-btn-2"
+                    class="px-3 py-1 text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa 2</button>
+                <button onclick="switchStage(3)" id="stage-btn-3"
+                    class="px-3 py-1 text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa 3</button>
+                <button onclick="switchStage(4)" id="stage-btn-4"
+                    class="px-3 py-1 text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa 4</button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center gap-4">
+            <button onclick="goToToday()"
+                class="px-3 py-1.5 text-xs font-semibold bg-red-800 hover:bg-red-700 border border-red-700 rounded-md transition text-white">Hoje</button>
+            <div class="flex items-center gap-2">
+                <button onclick="changeWeek(-1)" class="p-1 hover:bg-red-800 rounded-full transition text-white"><i
+                        data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                <button onclick="changeWeek(1)" class="p-1 hover:bg-red-800 rounded-full transition text-white"><i
+                        data-lucide="chevron-right" class="w-5 h-5"></i></button>
+            </div>
+            <!-- Month/Year Selectors -->
+            <div class="flex items-center gap-2">
+                <select id="month-select"
+                    class="bg-red-800 border-none text-white text-sm rounded-lg focus:ring-white focus:border-white block p-2 cursor-pointer font-bold outline-none">
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
+                </select>
+
+                <select id="year-select"
+                    class="bg-red-800 border-none text-white text-sm rounded-lg focus:ring-white focus:border-white block p-2 cursor-pointer font-bold outline-none">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
+                    <option value="2032">2032</option>
+                    <option value="2033">2033</option>
+                    <option value="2034">2034</option>
+                    <option value="2035">2035</option>
+                    <option value="2036">2036</option>
+                </select>
+            </div>
+
+            <div class="h-6 w-px bg-red-400 mx-2"></div>
+
+            <!-- Admin Button -->
+            <button onclick="openAdminLogin()"
+                class="p-2 hover:bg-red-800 rounded-lg transition text-white flex items-center gap-1"
+                title="Configurações Admin">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span class="text-xs font-bold uppercase hidden sm:block">Admin</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Calendar Area -->
+    <main class="flex-1 flex flex-col overflow-hidden relative bg-white">
+        <!-- Week Header (Days) -->
+        <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-slate-200 bg-slate-50 mr-[8px]">
+            <!-- mr-8px to account for scrollbar -->
+            <div class="p-2 border-r border-slate-200"></div> <!-- Time Spacer -->
+            <div id="header-sun" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">DOM</div>
+                <div class="text-xl font-bold text-slate-800">25</div>
+            </div>
+            <div id="header-mon" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">SEG</div>
+                <div class="text-xl font-bold text-slate-800">26</div>
+            </div>
+            <div id="header-tue" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">TER</div>
+                <div class="text-xl font-bold text-slate-800">27</div>
+            </div>
+            <div id="header-wed" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">QUA</div>
+                <div class="text-xl font-bold text-slate-800">28</div>
+            </div>
+            <div id="header-thu" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">QUI</div>
+                <div class="text-xl font-bold text-slate-800">29</div>
+            </div>
+            <div id="header-fri" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">SEX</div>
+                <div class="text-xl font-bold text-slate-800">30</div>
+            </div>
+            <div id="header-sat" class="p-2 text-center border-r border-slate-200 last:border-0">
+                <div class="text-xs text-slate-500 uppercase">SÁB</div>
+                <div class="text-xl font-bold text-slate-800">31</div>
+            </div>
+        </div>
+
+        <!-- Scrollable Grid -->
+        <div id="calendar-scroll" class="flex-1 overflow-y-auto">
+            <div id="week-grid" class="week-grid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal"
+        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[100] backdrop-blur-sm">
+        <div class="glass bg-white rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-slate-800">Agendar Aula</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-red-600"><i
+                        data-lucide="x"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto text-slate-800">
+                <p id="edit-slot-info" class="text-sm text-slate-500 mb-6"></p>
+
+                <!-- Existing Items List (if any) -->
+                <div id="existing-items" class="mb-4 space-y-2"></div>
+
+                <form id="assignment-form" class="space-y-4 pt-4 border-t border-slate-200">
+                    <!-- Axis Type -->
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="axis-type" value="specific" class="peer sr-only" checked
+                                onchange="updateFormVisibility()">
+                            <div
+                                class="p-2 rounded-lg border border-slate-200 text-center peer-checked:bg-red-600 peer-checked:border-red-600 transition-all text-slate-500 peer-checked:text-white text-sm font-bold">
+                                Eixo Específico
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="axis-type" value="common" class="peer sr-only"
+                                onchange="updateFormVisibility()">
+                            <div
+                                class="p-2 rounded-lg border border-slate-200 text-center peer-checked:bg-slate-700 peer-checked:border-slate-700 transition-all text-slate-500 peer-checked:text-white text-sm font-bold">
+                                Eixo Comum
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Course Selector (Only for Specific) -->
+                    <div id="course-select-wrapper">
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Curso</label>
+                        <select id="course-select"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                            onchange="updateSubjectOptions()">
+                            <!-- Options -->
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Componente</label>
+                        <select id="subject-select"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                            onchange="autoFillTeacher()">
+                            <!-- Options -->
+                        </select>
+                    </div>
+
+                    <!-- Teacher -->
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Professor(a)</label>
+                        <input type="text" id="teacher-name" readonly
+                            class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2 text-slate-500 text-sm cursor-not-allowed">
+                    </div>
+
+                    <!-- Optional Sync -->
+                    <div id="sync-ui-wrapper" class="hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                            <label class="block text-xs uppercase text-blue-600 font-bold mb-1 flex items-center gap-2">
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                Compartilhamento entre Etapas
+                            </label>
+                            <p class="text-[10px] text-blue-500 mb-2">Esta matéria pode ser compartilhada. Gostaria de
+                                espelhar esta aula em outra etapa?</p>
+                            <select id="sync-select"
+                                class="w-full bg-white border border-blue-200 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                                <option value="none">Não (Apenas esta etapa)</option>
+                                <!-- Stage options added by JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="error-msg" class="text-red-500 text-xs hidden font-bold"></div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="submit"
+                            class="flex-1 py-2 rounded-lg bg-primary hover:bg-red-700 text-white font-semibold transition text-sm">Adicionar
+                            Aula</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal"
+        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[120] backdrop-blur-sm">
+        <div class="glass bg-white rounded-xl w-full max-w-sm shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
+                    <i data-lucide="shield-lock" class="w-5 h-5"></i>
+                    Acesso Restrito
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Senha Admin</label>
+                        <input type="password" id="admin-password"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
+                            placeholder="Digite a senha...">
+                    </div>
+                    <div id="admin-password-error" class="text-red-500 text-xs hidden font-bold">Senha incorreta!</div>
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="closeAdminLogin()"
+                            class="flex-1 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold transition text-sm">Cancelar</button>
+                        <button onclick="checkAdminPassword()"
+                            class="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition text-sm">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Settings Modal -->
+    <div id="admin-settings-modal"
+        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[120] backdrop-blur-sm">
+        <div class="glass bg-white rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="settings-2" class="text-red-600"></i>
+                    Configurações Avançadas
+                </h3>
+                <button onclick="closeAdminSettings()" class="text-slate-400 hover:text-red-600"><i
+                        data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <!-- Delete All -->
+                <div class="mb-8 p-4 bg-red-50 rounded-lg border border-red-100">
+                    <h4 class="text-sm font-bold text-red-700 mb-2 uppercase tracking-wide">Zona de Perigo</h4>
+                    <p class="text-xs text-red-600 mb-4">Atenção: Esta ação irá apagar TODOS os agendamentos e eventos
+                        salvos permanentemente.</p>
+                    <button onclick="confirmClearAll()"
+                        class="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Limpar Todos os Dados
+                    </button>
+                </div>
+
+                <hr class="mb-6 border-slate-100">
+
+                <!-- Add Event -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">Adicionar Evento Especial
+                    </h4>
+                    <form id="admin-event-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Título do
+                                Evento</label>
+                            <input type="text" id="event-text" required placeholder="Ex: Evento Business 9 horas"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Data</label>
+                            <input type="date" id="event-date" required
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                        </div>
+                        <button type="submit"
+                            class="w-full py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-sm font-bold transition">
+                            Agendar Evento
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="password-modal"
+        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[110] backdrop-blur-sm">
+        <div class="glass bg-white rounded-xl w-full max-w-sm shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                    Excluir Aula
+                </h3>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-slate-600 mb-4">Para confirmar a exclusão, digite a senha de segurança.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Senha</label>
+                        <input type="password" id="delete-password"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
+                            placeholder="Digite a senha...">
+                    </div>
+                    <div id="password-error" class="text-red-500 text-xs hidden font-bold">Senha incorreta!</div>
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="closePasswordModal()"
+                            class="flex-1 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold transition text-sm">Cancelar</button>
+                        <button onclick="checkPassword()"
+                            class="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition text-sm">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-[70]">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        <span id="toast-msg">Salvo!</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
