@@ -785,38 +785,6 @@ form.onsubmit = (e) => {
     showToast('Aula adicionada com sucesso!');
 }
 
-function renderSpecialEvents() {
-    const grid = document.getElementById('week-grid');
-    const existingRow = document.getElementById('special-events-row');
-    if (existingRow) existingRow.remove();
-
-    if (state.specialEvents.length === 0) return;
-
-    const row = document.createElement('div');
-    row.id = 'special-events-row';
-    row.className = 'col-span-full bg-red-50/50 border-y border-red-100 flex items-center p-3 sm:p-4 gap-4 animate-card shadow-inner mb-4';
-
-    row.innerHTML = `
-        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-red-100">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-            </span>
-            <span class="text-[10px] font-black uppercase text-red-600 tracking-tighter">Eventos do Mês</span>
-        </div>
-        <div class="flex-1 flex gap-6 overflow-x-auto no-scrollbar py-1">
-            ${state.specialEvents.map(ev => `
-                <div class="flex items-center gap-2 whitespace-nowrap group">
-                    <span class="text-[11px] font-black text-gray-400 group-hover:text-red-600 transition-colors uppercase tracking-widest">${new Date(ev.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
-                    <span class="text-[12px] font-bold text-gray-700">${ev.text}</span>
-                    <div class="w-1 h-1 rounded-full bg-slate-300 last:hidden"></div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-    grid.prepend(row);
-}
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
