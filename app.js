@@ -234,7 +234,19 @@ function init() {
     renderStageButtons();
     renderCalendar(); // Render immediately (don't wait for cloud)
     setupFirebaseListeners();
+    setupMobileSync(); // Horizontal scroll sync
     lucide.createIcons();
+}
+
+function setupMobileSync() {
+    const scrollContainer = document.getElementById('calendar-scroll');
+    const headerContainer = document.getElementById('week-header').parentElement;
+
+    if (scrollContainer && headerContainer) {
+        scrollContainer.addEventListener('scroll', () => {
+            headerContainer.scrollLeft = scrollContainer.scrollLeft;
+        });
+    }
 }
 
 // --- PERSISTENCE (Firebase) ---
@@ -350,7 +362,7 @@ function renderCalendar() {
     HOURS.forEach((hLabel, hIdx) => {
         // 1. Time Label Cell
         const timeCell = document.createElement('div');
-        timeCell.className = 'border-b border-r border-slate-200 p-2 text-xs text-slate-400 text-right sticky left-0 bg-white z-10';
+        timeCell.className = 'border-b border-r border-slate-200 p-2 text-[10px] sm:text-xs text-slate-400 text-right sticky left-0 bg-white z-10';
         timeCell.innerHTML = `<span class="-mt-2 block">${hLabel.split(' - ')[0]}</span>`;
         weekGrid.appendChild(timeCell);
 
@@ -396,7 +408,7 @@ function renderCalendar() {
 
     // 3. Special Events Row
     const eventTimeCell = document.createElement('div');
-    eventTimeCell.className = 'border-b border-r border-slate-200 p-2 text-[10px] text-red-600 font-bold text-right sticky left-0 bg-slate-50 z-10';
+    eventTimeCell.className = 'border-b border-r border-slate-200 p-2 text-[10px] sm:text-xs text-red-600 font-bold text-right sticky left-0 bg-slate-50 z-10';
     eventTimeCell.textContent = 'EVENTOS';
     weekGrid.appendChild(eventTimeCell);
 
