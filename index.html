@@ -49,18 +49,18 @@
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 4px;
+            height: 4px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background-color: rgba(204, 24, 30, 0.5);
+            background-color: rgba(204, 24, 30, 0.3);
             border-radius: 4px;
         }
 
         .week-grid {
             display: grid;
-            grid-template-columns: 60px repeat(7, minmax(120px, 1fr));
+            grid-template-columns: 50px repeat(7, minmax(130px, 1fr));
             grid-template-rows: auto;
         }
 
@@ -78,6 +78,20 @@
             .delete-btn {
                 opacity: 1;
             }
+
+            .week-grid {
+                grid-template-columns: 40px repeat(7, minmax(110px, 1fr));
+            }
+        }
+
+        /* Hide scrollbar for stage selector but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -85,127 +99,94 @@
 <body class="h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header
-        class="flex flex-col sm:flex-row justify-between items-center p-3 sm:p-4 border-b border-red-800 bg-[#CC181E] z-50 shadow-md text-white gap-3">
-        <div class="flex items-center justify-between w-full sm:w-auto gap-2 sm:gap-4">
-            <h1 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2 truncate">
-                <i data-lucide="calendar" class="text-white shrink-0"></i>
-                <span class="hidden lg:inline">Centro de Ciências Sociais Aplicadas</span>
-                <span class="lg:hidden">CCSA Mackenzie</span>
+    <header class="bg-[#CC181E] text-white z-50 shadow-md">
+        <!-- Top bar: Logo and Mobile Controls -->
+        <div class="flex flex-row justify-between items-center p-2 sm:p-3 border-b border-red-800/50">
+            <h1 class="text-sm sm:text-lg font-bold flex items-center gap-2 truncate">
+                <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                <span class="hidden md:inline">Centro de Ciências Sociais Aplicadas</span>
+                <span>CCSA Mackenzie</span>
             </h1>
 
-            <div class="h-6 w-px bg-red-400 mx-1 hidden sm:block"></div>
+            <div class="flex items-center gap-2">
+                <!-- Today/Nav -->
+                <div class="flex items-center bg-red-800/40 rounded-lg p-0.5">
+                    <button onclick="goToToday()"
+                        class="p-1.5 text-[10px] font-bold uppercase hover:bg-red-700/50 rounded transition">Hoje</button>
+                    <div class="w-px h-3 bg-red-700/50 mx-1"></div>
+                    <button onclick="changeWeek(-1)" class="p-1 hover:bg-red-700/50 rounded transition"><i
+                            data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                    <button onclick="changeWeek(1)" class="p-1 hover:bg-red-700/50 rounded transition"><i
+                            data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                </div>
 
-            <!-- Stage Selector -->
-            <div class="flex bg-red-800/50 rounded-lg p-0.5 sm:p-1 gap-0.5 sm:gap-1">
-                <button onclick="switchStage(1)" id="stage-btn-1"
-                    class="px-2 sm:px-3 py-1 text-[10px] sm:text-xs md:text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa
-                    1</button>
-                <button onclick="switchStage(2)" id="stage-btn-2"
-                    class="px-2 sm:px-3 py-1 text-[10px] sm:text-xs md:text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa
-                    2</button>
-                <button onclick="switchStage(3)" id="stage-btn-3"
-                    class="px-2 sm:px-3 py-1 text-[10px] sm:text-xs md:text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa
-                    3</button>
-                <button onclick="switchStage(4)" id="stage-btn-4"
-                    class="px-2 sm:px-3 py-1 text-[10px] sm:text-xs md:text-sm rounded-md transition hover:bg-red-700 text-red-100">Etapa
-                    4</button>
+                <button onclick="openAdminLogin()" class="p-1.5 hover:bg-red-800/50 rounded-lg transition"
+                    title="Configurações Admin">
+                    <i data-lucide="settings" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </button>
             </div>
         </div>
 
-        <!-- Navigation -->
-        <div class="flex items-center justify-between w-full sm:w-auto gap-2 sm:gap-4">
-            <div class="flex items-center gap-1 sm:gap-2">
-                <button onclick="goToToday()"
-                    class="px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold bg-red-800 hover:bg-red-700 border border-red-700 rounded-md transition text-white">Hoje</button>
-                <div class="flex items-center gap-0.5 sm:gap-1">
-                    <button onclick="changeWeek(-1)" class="p-1 hover:bg-red-800 rounded-full transition text-white"><i
-                            data-lucide="chevron-left" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
-                    <button onclick="changeWeek(1)" class="p-1 hover:bg-red-800 rounded-full transition text-white"><i
-                            data-lucide="chevron-right" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
-                </div>
+        <!-- Bottom bar: Selectors -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center p-2 gap-2">
+            <!-- Stage Selector (Scrollable horizontally on mobile) -->
+            <div class="flex bg-red-900/30 rounded-lg p-1 gap-1 overflow-x-auto no-scrollbar shrink-0">
+                <button onclick="switchStage(1)" id="stage-btn-1"
+                    class="px-3 py-1 text-[11px] font-bold rounded-md whitespace-nowrap transition text-red-100">Etapa
+                    1</button>
+                <button onclick="switchStage(2)" id="stage-btn-2"
+                    class="px-3 py-1 text-[11px] font-bold rounded-md whitespace-nowrap transition text-red-100">Etapa
+                    2</button>
+                <button onclick="switchStage(3)" id="stage-btn-3"
+                    class="px-3 py-1 text-[11px] font-bold rounded-md whitespace-nowrap transition text-red-100">Etapa
+                    3</button>
+                <button onclick="switchStage(4)" id="stage-btn-4"
+                    class="px-3 py-1 text-[11px] font-bold rounded-md whitespace-nowrap transition text-red-100">Etapa
+                    4</button>
             </div>
 
-            <!-- Month/Year Selectors -->
-            <div class="flex items-center gap-1 sm:gap-2">
+            <!-- Date Selectors -->
+            <div class="flex items-center gap-1 ml-auto">
                 <select id="month-select"
-                    class="bg-red-800 border-none text-white text-[10px] sm:text-xs md:text-sm rounded-lg focus:ring-white focus:border-white block p-1.5 sm:p-2 cursor-pointer font-bold outline-none">
-                    <option value="0">Jan</option>
-                    <option value="1">Fev</option>
-                    <option value="2">Mar</option>
-                    <option value="3">Abr</option>
-                    <option value="4">Mai</option>
-                    <option value="5">Jun</option>
-                    <option value="6">Jul</option>
-                    <option value="7">Ago</option>
-                    <option value="8">Set</option>
-                    <option value="9">Out</option>
-                    <option value="10">Nov</option>
-                    <option value="11">Dez</option>
+                    class="bg-red-800/50 border-none text-white text-[11px] rounded-lg p-1.5 font-bold outline-none cursor-pointer">
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
                 </select>
 
                 <select id="year-select"
-                    class="bg-red-800 border-none text-white text-[10px] sm:text-xs md:text-sm rounded-lg focus:ring-white focus:border-white block p-1.5 sm:p-2 cursor-pointer font-bold outline-none">
-                    <option value="2026">26</option>
-                    <option value="2027">27</option>
-                    <option value="2028">28</option>
-                    <option value="2029">29</option>
-                    <option value="2030">30</option>
-                    <option value="2031">31</option>
-                    <option value="2032">32</option>
-                    <option value="2033">33</option>
-                    <option value="2034">34</option>
-                    <option value="2035">35</option>
-                    <option value="2036">36</option>
+                    class="bg-red-800/50 border-none text-white text-[11px] rounded-lg p-1.5 font-bold outline-none cursor-pointer">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
                 </select>
             </div>
-
-            <div class="h-6 w-px bg-red-400 mx-1 hidden sm:block"></div>
-
-            <!-- Admin Button -->
-            <button onclick="openAdminLogin()"
-                class="p-2 hover:bg-red-800 rounded-lg transition text-white flex items-center gap-1"
-                title="Configurações Admin">
-                <i data-lucide="settings" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                <span class="text-[10px] font-bold uppercase hidden md:block">Admin</span>
-            </button>
         </div>
     </header>
 
     <!-- Main Calendar Area -->
     <main class="flex-1 flex flex-col overflow-hidden relative bg-white">
         <!-- Week Header (Days) container for horizontal scrolling -->
-        <div class="overflow-hidden border-b border-slate-200 bg-slate-50 mr-[8px]">
-            <div id="week-header" class="grid grid-cols-[60px_repeat(7,minmax(120px,1fr))]">
+        <div class="overflow-hidden border-b border-slate-200 bg-slate-50 mr-[4px]">
+            <div id="week-header"
+                class="grid grid-cols-[50px_repeat(7,minmax(130px,1fr))] sm:grid-cols-[50px_repeat(7,minmax(130px,1fr))] max-sm:grid-cols-[40px_repeat(7,minmax(110px,1fr))]">
                 <div class="p-2 border-r border-slate-200 bg-slate-100 sticky left-0 z-20"></div> <!-- Time Spacer -->
-                <div id="header-sun" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">DOM</div>
-                    <div class="text-xl font-bold text-slate-800">25</div>
-                </div>
-                <div id="header-mon" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">SEG</div>
-                    <div class="text-xl font-bold text-slate-800">26</div>
-                </div>
-                <div id="header-tue" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">TER</div>
-                    <div class="text-xl font-bold text-slate-800">27</div>
-                </div>
-                <div id="header-wed" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">QUA</div>
-                    <div class="text-xl font-bold text-slate-800">28</div>
-                </div>
-                <div id="header-thu" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">QUI</div>
-                    <div class="text-xl font-bold text-slate-800">29</div>
-                </div>
-                <div id="header-fri" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">SEX</div>
-                    <div class="text-xl font-bold text-slate-800">30</div>
-                </div>
-                <div id="header-sat" class="p-2 text-center border-r border-slate-200 last:border-0">
-                    <div class="text-xs text-slate-500 uppercase">SÁB</div>
-                    <div class="text-xl font-bold text-slate-800">31</div>
-                </div>
+                <div id="header-sun" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
+                <div id="header-mon" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
+                <div id="header-tue" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
+                <div id="header-wed" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
+                <div id="header-thu" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
+                <div id="header-fri" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
+                <div id="header-sat" class="p-1 sm:p-2 text-center border-r border-slate-200 last:border-0"></div>
             </div>
         </div>
 

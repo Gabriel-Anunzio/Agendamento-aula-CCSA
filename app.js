@@ -451,7 +451,7 @@ function createPill(data, isCommon, dateStr, hIdx, itemIndex) {
     const el = document.createElement('div');
     const courseName = data.courseName || '';
 
-    // Shorten course name
+    // Simplified Short Names for mobile
     let shortName = courseName;
     if (courseName.includes('RECURSOS HUMANOS')) shortName = 'RH';
     else if (courseName.includes('COMERCIAL/MARKETING')) shortName = 'COM/MKT';
@@ -463,11 +463,11 @@ function createPill(data, isCommon, dateStr, hIdx, itemIndex) {
     else if (courseName.includes('FINANCEIRA')) shortName = 'GF';
 
     if (isCommon) {
-        el.className = 'w-full bg-slate-700 text-white text-[10px] p-1 rounded shadow-sm overflow-hidden whitespace-nowrap border-l-2 border-slate-900';
-        el.innerHTML = `<strong>Comum</strong>: ${data.subject}`;
+        el.className = 'w-full bg-slate-700 text-white text-[9px] sm:text-[10px] p-1 rounded shadow-sm overflow-hidden whitespace-nowrap border-l-2 border-slate-900';
+        el.innerHTML = `<span class="font-bold">Comum</span>: <span class="truncate">${data.subject}</span>`;
     } else {
-        el.className = 'flex-1 min-w-[45%] bg-red-600 text-white text-[10px] p-1 rounded shadow-sm overflow-hidden border-l-2 border-red-800 group relative hover:z-20';
-        el.innerHTML = `<div class="font-bold opacity-90">${shortName}</div><div class="truncate" title="${data.subject}">${data.subject}</div>`;
+        el.className = 'flex-1 min-w-[45%] bg-red-600 text-white text-[9px] sm:text-[10px] p-1 rounded shadow-sm overflow-hidden border-l-2 border-red-800 group relative hover:z-20';
+        el.innerHTML = `<div class="font-bold opacity-80 leading-tight">${shortName}</div><div class="truncate leading-tight" title="${data.subject}">${data.subject}</div>`;
     }
 
     return el;
