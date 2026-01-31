@@ -297,9 +297,9 @@ function renderStageButtons() {
         const btn = document.getElementById(`stage-btn-${s}`);
         if (btn) {
             if (state.activeStage === s) {
-                btn.className = "px-3 py-1 text-sm rounded-md transition bg-white text-red-600 font-bold shadow";
+                btn.className = "btn-premium flex-1 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-lg whitespace-nowrap transition-all duration-300 bg-white text-red-600 shadow-xl scale-105 z-10";
             } else {
-                btn.className = "px-3 py-1 text-sm rounded-md transition hover:bg-red-700 text-red-100";
+                btn.className = "btn-premium flex-1 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-lg whitespace-nowrap transition-all duration-300 text-red-100 hover:bg-white/10";
             }
         }
     });
@@ -451,23 +451,54 @@ function createPill(data, isCommon, dateStr, hIdx, itemIndex) {
     const el = document.createElement('div');
     const courseName = data.courseName || '';
 
-    // Simplified Short Names for mobile
+    // Advanced Short Names mapping for cleaner UI
     let shortName = courseName;
-    if (courseName.includes('RECURSOS HUMANOS')) shortName = 'RH';
-    else if (courseName.includes('COMERCIAL/MARKETING')) shortName = 'COM/MKT';
-    else if (courseName.includes('COMERCIAL/GESTÃO FINANCEIRA')) shortName = 'COM/FIN';
-    else if (courseName.includes('COMERCIAL')) shortName = 'COM';
-    else if (courseName.includes('MARKETING')) shortName = 'MKT';
-    else if (courseName.includes('LOGÍSTICA')) shortName = 'LOG';
-    else if (courseName.includes('PROCESSOS')) shortName = 'PG';
-    else if (courseName.includes('FINANCEIRA')) shortName = 'GF';
+    const mapping = {
+        'RECURSOS HUMANOS': 'RH',
+        'COMERCIAL/MARKETING': 'COM/MKT',
+        'COMERCIAL/GESTÃO FINANCEIRA': 'COM/GF',
+        'COMERCIAL': 'COM',
+        'MARKETING': 'MKT',
+        'LOGÍSTICA': 'LOG',
+        'PROCESSOS': 'PG',
+        'FINANCEIRA': 'GF'
+    };
+
+    for (const [key, val] of Object.entries(mapping)) {
+        if (courseName.includes(key)) {
+            shortName = val;
+            break;
+        }
+    }
+
+    // Base Styles
+    el.className = 'w-full mb-1 last:mb-0 rounded-xl shadow-sm border border-slate-200/50 overflow-hidden flex flex-col group relative hover:z-20 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 animate-card';
 
     if (isCommon) {
-        el.className = 'w-full bg-slate-700 text-white text-[9px] sm:text-[10px] p-1 rounded shadow-sm overflow-hidden whitespace-nowrap border-l-2 border-slate-900';
-        el.innerHTML = `<span class="font-bold">Comum</span>: <span class="truncate">${data.subject}</span>`;
+        // Common Axis: Solid Bold Professional Look
+        el.className += ' bg-[#B9141A] border-none shadow-[0_4px_12px_-2px_rgba(185,20,26,0.3)]';
+        el.innerHTML = `
+            <div class="px-2 py-1.5 flex flex-col justify-center min-h-[40px]">
+                <div class="flex items-center gap-1 mb-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+                    <span class="text-[9px] font-black text-white/70 uppercase tracking-widest">Eixo Comum</span>
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-bold text-white leading-tight truncate px-0.5">${data.subject}</div>
+            </div>
+        `;
     } else {
-        el.className = 'flex-1 min-w-[45%] bg-red-600 text-white text-[9px] sm:text-[10px] p-1 rounded shadow-sm overflow-hidden border-l-2 border-red-800 group relative hover:z-20';
-        el.innerHTML = `<div class="font-bold opacity-80 leading-tight">${shortName}</div><div class="truncate leading-tight" title="${data.subject}">${data.subject}</div>`;
+        // Specific Axis: Clean White Premium Look with Color Indicator
+        el.className += ' bg-white';
+        el.innerHTML = `
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#B9141A]"></div>
+            <div class="pl-2.5 pr-2 py-1.5 flex flex-col justify-center min-h-[42px]">
+                <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[9px] font-black text-[#B9141A] uppercase tracking-wider">${shortName}</span>
+                    <i data-lucide="tag" class="w-2.5 h-2.5 text-slate-300 group-hover:text-[#B9141A]/40 transition-colors"></i>
+                </div>
+                <div class="text-[10px] sm:text-[11px] font-bold text-gray-800 leading-tight truncate" title="${data.subject}">${data.subject}</div>
+            </div>
+        `;
     }
 
     return el;
@@ -751,9 +782,52 @@ form.onsubmit = (e) => {
     openEditModal(dateStr, hourIdx); // Reload modal to show new item
 
     // Toast
+    showToast('Aula adicionada com sucesso!');
+}
+
+function renderSpecialEvents() {
+    const grid = document.getElementById('week-grid');
+    const existingRow = document.getElementById('special-events-row');
+    if (existingRow) existingRow.remove();
+
+    if (state.specialEvents.length === 0) return;
+
+    const row = document.createElement('div');
+    row.id = 'special-events-row';
+    row.className = 'col-span-full bg-red-50/50 border-y border-red-100 flex items-center p-3 sm:p-4 gap-4 animate-card shadow-inner mb-4';
+
+    row.innerHTML = `
+        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-red-100">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+            </span>
+            <span class="text-[10px] font-black uppercase text-red-600 tracking-tighter">Eventos do Mês</span>
+        </div>
+        <div class="flex-1 flex gap-6 overflow-x-auto no-scrollbar py-1">
+            ${state.specialEvents.map(ev => `
+                <div class="flex items-center gap-2 whitespace-nowrap group">
+                    <span class="text-[11px] font-black text-gray-400 group-hover:text-red-600 transition-colors uppercase tracking-widest">${new Date(ev.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                    <span class="text-[12px] font-bold text-gray-700">${ev.text}</span>
+                    <div class="w-1 h-1 rounded-full bg-slate-300 last:hidden"></div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    grid.prepend(row);
+}
+
+function showToast(msg) {
     const toast = document.getElementById('toast');
-    toast.classList.remove('translate-y-20', 'opacity-0');
-    setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    const toastMsg = document.getElementById('toast-msg');
+    toastMsg.innerText = msg;
+    toast.classList.remove('translate-y-24', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 4000);
 }
 
 function checkGlobalTeacherConflict(dateStr, hIdx, teacher) {
