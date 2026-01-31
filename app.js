@@ -196,6 +196,8 @@ const form = document.getElementById('assignment-form');
 const existingItemsContainer = document.getElementById('existing-items');
 const courseSelect = document.getElementById('course-select');
 const subjectSelect = document.getElementById('subject-select');
+const subjectInput = document.getElementById('subject-input');
+const subjectIcon = document.getElementById('subject-dropdown-icon');
 const teacherInput = document.getElementById('teacher-name');
 const errorMsg = document.getElementById('error-msg');
 const monthSelect = document.getElementById('month-select');
@@ -214,6 +216,8 @@ const eventDate = document.getElementById('event-date');
 const syncWrapper = document.getElementById('sync-ui-wrapper');
 const syncSelect = document.getElementById('sync-select');
 const syncExpandable = document.getElementById('sync-expandable');
+const adminBlockWrapper = document.getElementById('admin-block-wrapper');
+const adminIsCommon = document.getElementById('admin-is-common');
 
 const deletePasswordInput = document.getElementById('delete-password');
 const passwordError = document.getElementById('password-error');
@@ -240,6 +244,11 @@ function init() {
     setupFirebaseListeners();
     setupMobileSync(); // Horizontal scroll sync
     lucide.createIcons();
+
+    // Listeners for Admin Custom Subject
+    if (subjectInput) {
+        subjectInput.addEventListener('input', checkSyncRequirement);
+    }
 }
 
 function setupMobileSync() {
@@ -275,6 +284,7 @@ function setupFirebaseListeners() {
 }
 
 function saveAssignments() {
+    if (sessionStorage.getItem('mack_access') !== 'granted') return;
     console.log("Tentando salvar agendamentos...", state.assignments);
     db.ref('assignments').set(state.assignments)
         .then(() => console.log("Agendamentos salvos com sucesso!"))
@@ -285,6 +295,7 @@ function saveAssignments() {
 }
 
 function saveEvents() {
+    if (sessionStorage.getItem('mack_access') !== 'granted') return;
     console.log("Tentando salvar eventos...", state.events);
     db.ref('events').set(state.events)
         .then(() => console.log("Eventos salvos com sucesso!"))
@@ -578,9 +589,15 @@ window.openEditModal = function (dateStr, hIdx) {
 
     // Reset Form
     teacherInput.value = '';
+    subjectSelect.classList.remove('hidden');
+    subjectInput.classList.add('hidden');
+    subjectInput.value = '';
+    subjectIcon.classList.remove('hidden');
+    if (adminBlockWrapper) adminBlockWrapper.classList.add('hidden');
+    if (adminIsCommon) adminIsCommon.checked = false;
 
     // Fill Course Select
-    const availableCourses = COURSES_BY_STAGE[state.activeStage] || [];
+    const availableCourses = [...(COURSES_BY_STAGE[state.activeStage] || []), "ADMIN"];
     courseSelect.innerHTML = availableCourses.map(cName => `<option value="${cName}">${cName}</option>`).join('');
 
     updateFormVisibility(); // Triggers subject options
@@ -600,9 +617,37 @@ window.updateSubjectOptions = function () {
 
     if (type === 'common') {
         options = COMMON_SUBJECTS[stage] || [];
+        subjectSelect.classList.remove('hidden');
+        subjectInput.classList.add('hidden');
+        subjectIcon.classList.remove('hidden');
     } else {
         const courseName = courseSelect.value;
         if (!courseName) return;
+
+        if (courseName === 'ADMIN') {
+            const pass = prompt("Acesso restrito. Digite a senha Admin:");
+            if (btoa(pass) !== _0x1b) {
+                alert("Senha incorreta!");
+                courseSelect.selectedIndex = 0;
+                updateSubjectOptions();
+                return;
+            }
+            // Admin setup
+            subjectSelect.classList.add('hidden');
+            subjectInput.classList.remove('hidden');
+            subjectInput.value = '';
+            subjectIcon.classList.add('hidden');
+            teacherInput.value = 'Admin';
+            if (adminBlockWrapper) adminBlockWrapper.classList.remove('hidden');
+            checkSyncRequirement();
+            return;
+        }
+
+        // Standard setup
+        if (adminBlockWrapper) adminBlockWrapper.classList.add('hidden');
+        subjectSelect.classList.remove('hidden');
+        subjectInput.classList.add('hidden');
+        subjectIcon.classList.remove('hidden');
 
         // Get subjects from DB or Generic fallback
         const stageSubjects = SUBJECTS_DB[stage] && SUBJECTS_DB[stage][courseName];
@@ -619,7 +664,7 @@ window.updateSubjectOptions = function () {
 
 function checkSyncRequirement() {
     const course = courseSelect.value;
-    const subject = subjectSelect.value;
+    const subject = (course === 'ADMIN') ? subjectInput.value : subjectSelect.value;
     const type = document.querySelector('input[name="axis-type"]:checked').value;
 
     if (type === 'common') {
@@ -736,16 +781,25 @@ form.onsubmit = (e) => {
     const { dateStr, hourIdx } = editingSlot;
     const type = document.querySelector('input[name="axis-type"]:checked').value;
     const teacher = teacherInput.value;
-    const subject = subjectSelect.value;
+    const course = courseSelect.value;
 
-    if (!teacher) return;
+    // Admin Override: If "ADMIN" is selected and "Bloquear horário" is checked, treat as Common Axis
+    let finalType = type;
+    if (course === 'ADMIN' && adminIsCommon.checked) {
+        finalType = 'common';
+    }
+
+    // Choose subject from select OR custom input (ADMIN)
+    const subject = (course === 'ADMIN') ? subjectInput.value : subjectSelect.value;
+
+    if (!teacher || !subject) return;
 
     // Prepare Entry
     const newEntry = {
-        type,
+        type: finalType,
         teacher,
         subject,
-        courseName: (type === 'specific') ? courseSelect.value : null
+        courseName: (finalType === 'specific') ? course : null
     };
 
     const key = `${state.activeStage}-${dateStr}-${hourIdx}`;
@@ -755,7 +809,7 @@ form.onsubmit = (e) => {
     // --- CONFLICT CHECKS ---
 
     // 1. Common vs Specific
-    if (type === 'common') {
+    if (finalType === 'common') {
         // Cannot add Common if ANY items exist (Specific or Common)
         if (currentItems.length > 0) {
             errorMsg.textContent = "Conflito: Remova as aulas existentes antes de adicionar um Eixo Comum.";
@@ -841,6 +895,7 @@ function showToast(msg) {
 }
 
 function checkGlobalTeacherConflict(dateStr, hIdx, teacher) {
+    if (teacher === 'Admin') return null; // Admin can be everywhere
     // Iterate ALL assignments in state (all keys)
     for (const [k, items] of Object.entries(state.assignments)) {
         // key: stage-date-hour
@@ -924,6 +979,90 @@ eventForm.onsubmit = (e) => {
     renderCalendar();
     eventForm.reset();
     alert('Evento adicionado!');
+}
+
+window.exportReport = function () {
+    const assignments = state.assignments;
+    if (!assignments || Object.keys(assignments).length === 0) {
+        alert("Nenhum dado encontrado para exportar.");
+        return;
+    }
+
+    const monthNames = [
+        "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+    ];
+
+    // Grouping by Course - Subject - Teacher
+    const reportData = {};
+
+    for (const [key, items] of Object.entries(assignments)) {
+        const parts = key.split('-');
+        if (parts.length < 5) continue;
+
+        // stage-YYYY-MM-DD-hourIdx
+        const hourIdx = parts[parts.length - 1];
+        const dateStr = `${parts[1]}-${parts[2]}-${parts[3]}`;
+
+        const dateObj = new Date(dateStr + 'T00:00:00');
+        const day = dateObj.getDate();
+        const month = dateObj.getMonth();
+        const year = dateObj.getFullYear();
+        const hourRange = HOURS[parseInt(hourIdx)];
+
+        if (!hourRange) continue;
+
+        items.forEach(it => {
+            const course = it.type === 'common' ? 'TODOS OS CURSOS' : (it.courseName || 'N/A');
+            const groupKey = `${course} - ${it.subject} - ${it.teacher} - ${month}-${year}`;
+
+            if (!reportData[groupKey]) {
+                reportData[groupKey] = {
+                    header: `(${course}) - (${it.subject}) - (${it.teacher}) tinha aulas marcadas no mês de ${monthNames[month]} de ${year}`,
+                    slots: []
+                };
+            }
+
+            const hourOnly = hourRange.split(' - ')[0];
+            const isDuplicate = reportData[groupKey].slots.some(s => s.day === day && s.hour === hourOnly);
+
+            if (!isDuplicate) {
+                reportData[groupKey].slots.push({ day, hour: hourOnly });
+            }
+        });
+    }
+
+    // Build Text Content
+    let textContent = "RELATÓRIO DE EMERGÊNCIA - AGENDAMENTO CCSA\n";
+    textContent += "Gerado em: " + new Date().toLocaleString('pt-BR') + "\n";
+    textContent += "--------------------------------------------------\n\n";
+
+    for (const group of Object.values(reportData)) {
+        textContent += group.header + "\n";
+
+        // Final Sort: Day ASC, then Hour ASC
+        group.slots.sort((a, b) => {
+            if (a.day !== b.day) return a.day - b.day;
+            return a.hour.localeCompare(b.hour);
+        });
+
+        group.slots.forEach(slot => {
+            textContent += `Dia: ${slot.day.toString().padStart(2, '0')}\n`;
+            textContent += `Hora: ${slot.hour}\n`;
+        });
+        textContent += "\n";
+    }
+
+    // Download Logic
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Relatorio_Emergencia_CCSA_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
 }
 
 // Boot

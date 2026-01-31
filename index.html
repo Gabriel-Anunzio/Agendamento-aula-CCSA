@@ -399,7 +399,9 @@
                                     class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
                                     onchange="autoFillTeacher()">
                                 </select>
-                                <i data-lucide="chevron-down"
+                                <input type="text" id="subject-input" placeholder="Digite o componente..."
+                                    class="hidden w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none shadow-inner">
+                                <i id="subject-dropdown-icon" data-lucide="chevron-down"
                                     class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
                             </div>
                         </div>
@@ -415,6 +417,21 @@
                                 <input type="text" id="teacher-name" readonly
                                     class="bg-transparent border-none p-0 text-gray-700 text-sm font-bold w-full outline-none cursor-default">
                             </div>
+                        </div>
+
+                        <!-- Admin Block Toggle -->
+                        <div id="admin-block-wrapper" class="hidden animate-in slide-in-from-top-2 duration-300">
+                            <label class="flex items-center gap-3 cursor-pointer p-1 group">
+                                <div
+                                    class="relative inline-flex h-5 w-10 items-center rounded-full bg-slate-200 transition-colors group-hover:bg-slate-300 peer-checked:bg-red-600">
+                                    <input type="checkbox" id="admin-is-common" class="peer sr-only">
+                                    <span
+                                        class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all peer-checked:translate-x-5"></span>
+                                </div>
+                                <span
+                                    class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-red-600 transition-colors">Bloquear
+                                    horário para todos os cursos</span>
+                            </label>
                         </div>
 
                         <!-- Sync Logic UI Refined -->
@@ -544,6 +561,19 @@
                         data-lucide="x"></i></button>
             </div>
             <div class="p-6 overflow-y-auto">
+                <!-- Backup Report -->
+                <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <h4 class="text-sm font-bold text-blue-700 mb-2 uppercase tracking-wide">Relatório de Emergência
+                    </h4>
+                    <p class="text-xs text-blue-600 mb-4">Gere um arquivo de texto com todos os agendamentos registrados
+                        no sistema como backup.</p>
+                    <button onclick="exportReport()"
+                        class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        Extrair Relatório (.txt)
+                    </button>
+                </div>
+
                 <!-- Delete All -->
                 <div class="mb-8 p-4 bg-red-50 rounded-lg border border-red-100">
                     <h4 class="text-sm font-bold text-red-700 mb-2 uppercase tracking-wide">Zona de Perigo</h4>
