@@ -230,6 +230,16 @@ const _0x1c = 'bWFja2Vuemll';       // delete
 
 let editingSlot = null; // { dateStr, hourIdx }
 let pendingDeleteIdx = null;
+let pendingDeleteDate = null;
+let pendingDeleteType = 'assignment'; // 'assignment' or 'event'
+let requireAdminForDelete = false;
+
+function isDatePast(dateStr) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return target < today;
+}
 
 // --- INIT ---
 function init() {
@@ -450,10 +460,14 @@ function renderCalendar() {
         cell.className = 'border-b border-r border-slate-200 min-h-[40px] bg-slate-50/50 p-1 flex flex-col gap-1';
 
         const dayEvents = state.events[dateStr] || [];
-        dayEvents.forEach(evtText => {
+        dayEvents.forEach((evtText, evtIdx) => {
             const pill = document.createElement('div');
-            pill.className = 'bg-slate-800 text-white text-[10px] p-1.5 rounded shadow-sm flex items-center gap-1';
+            pill.className = 'bg-slate-800 text-white text-[10px] p-1.5 rounded shadow-sm flex items-center gap-1 cursor-pointer hover:bg-black transition-colors';
             pill.innerHTML = `<i data-lucide="star" class="w-3 h-3 text-yellow-400"></i> ${evtText}`;
+            pill.onclick = (e) => {
+                e.stopPropagation();
+                openDeleteEventModal(dateStr, evtIdx);
+            };
             cell.appendChild(pill);
         });
         weekGrid.appendChild(cell);
@@ -707,9 +721,51 @@ window.autoFillTeacher = function () {
 
 // --- LOGIC ---
 window.deleteAssignment = function (idx) {
+    if (!editingSlot) return;
     pendingDeleteIdx = idx;
+    pendingDeleteType = 'assignment';
+    pendingDeleteDate = editingSlot.dateStr;
+    requireAdminForDelete = isDatePast(pendingDeleteDate);
+
     deletePasswordInput.value = '';
     passwordError.classList.add('hidden');
+
+    // Update modal text if admin required
+    const title = passwordModal.querySelector('h3');
+    const desc = passwordModal.querySelector('p');
+    if (requireAdminForDelete) {
+        if (title) title.innerHTML = '<i data-lucide="shield-alert" class="w-5 h-5 text-red-600"></i> Bloqueio Admin';
+        if (desc) desc.textContent = 'Esta aula é de um dia que já passou. Somente o Administrador pode excluir.';
+    } else {
+        if (title) title.innerHTML = '<i data-lucide="trash-2" class="w-5 h-5 text-red-600"></i> Excluir Aula';
+        if (desc) desc.textContent = 'Para confirmar a exclusão, digite a senha de segurança.';
+    }
+    lucide.createIcons();
+
+    passwordModal.classList.remove('hidden');
+    deletePasswordInput.focus();
+}
+
+window.openDeleteEventModal = function (dateStr, idx) {
+    pendingDeleteIdx = idx;
+    pendingDeleteType = 'event';
+    pendingDeleteDate = dateStr;
+    requireAdminForDelete = isDatePast(dateStr);
+
+    deletePasswordInput.value = '';
+    passwordError.classList.add('hidden');
+
+    const title = passwordModal.querySelector('h3');
+    const desc = passwordModal.querySelector('p');
+    if (requireAdminForDelete) {
+        if (title) title.innerHTML = '<i data-lucide="shield-alert" class="w-5 h-5 text-red-600"></i> Bloqueio Admin';
+        if (desc) desc.textContent = 'Este evento é de um dia que já passou. Somente o Administrador pode excluir.';
+    } else {
+        if (title) title.innerHTML = '<i data-lucide="trash-2" class="w-5 h-5 text-red-600"></i> Excluir Evento';
+        if (desc) desc.textContent = 'Deseja excluir este evento especial? Digite a senha para confirmar.';
+    }
+    lucide.createIcons();
+
     passwordModal.classList.remove('hidden');
     deletePasswordInput.focus();
 }
@@ -736,11 +792,30 @@ window.checkGlobalAccess = function () {
 
 window.checkPassword = function () {
     const password = deletePasswordInput.value;
-    if (btoa(password) === _0x1c) {
-        executeDelete();
+    const correctPassword = requireAdminForDelete ? _0x1b : _0x1c;
+
+    if (btoa(password) === correctPassword) {
+        if (pendingDeleteType === 'assignment') {
+            executeDelete();
+        } else {
+            executeDeleteEvent();
+        }
     } else {
         passwordError.classList.remove('hidden');
     }
+}
+
+function executeDeleteEvent() {
+    if (!pendingDeleteDate || pendingDeleteIdx === null) return;
+    const dayEvents = state.events[pendingDeleteDate];
+    if (dayEvents) {
+        dayEvents.splice(pendingDeleteIdx, 1);
+        if (dayEvents.length === 0) delete state.events[pendingDeleteDate];
+        saveEvents();
+        renderCalendar();
+    }
+    closePasswordModal();
+    showToast('Evento excluído com sucesso!');
 }
 
 function executeDelete() {
