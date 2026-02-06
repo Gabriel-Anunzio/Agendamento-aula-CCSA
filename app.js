@@ -26,111 +26,111 @@ const STAGES = [1, 2, 3, 4];
 // Interlinked "Grids": Stage -> Course -> [Subject/Professor]
 const ACADEMIC_GRID = {
     1: {
-        'GESTÃO DE RECURSOS HUMANOS': [{ subject: 'CLIMA ORGANIZACIONAL', teacher: 'ALMIR MARTINS VIEIRA' }],
-        'GESTÃO COMERCIAL': [{ subject: 'DIREITOS DO CONSUMIDOR', teacher: 'FABIO DANIEL ROMANELLO VASQUES' }],
-        'LOGÍSTICA': [{ subject: 'INTRODUÇÃO À LOGÍSTICA', teacher: 'NATHALIE BARBOSA REIS MONTEIRO' }],
-        'GESTÃO COMERCIAL/MARKETING': [{ subject: 'DEFIN DE CONSUM E SEU COMPORTAMENTO', teacher: 'TOMAZ AFFONSO PENNER' }],
-        'PROCESSOS GERENCIAIS': [{ subject: 'ECONOMIA', teacher: 'WALESKA ANDREZA FERREIRA' }],
-        'GESTÃO FINANCEIRA': [{ subject: 'ECONOMIA E MERCADO', teacher: 'WALESKA ANDREZA FERREIRA' }]
+        'ENGENHARIA DE PROPULSÃO': [{ subject: 'DINÂMICA DE DOBRA ESPACIAL', teacher: 'PROF. ELIAS VORTEX' }],
+        'NAVEGAÇÃO INTERSTELAR': [{ subject: 'CARTOGRAFIA DE BURACOS NEGROS', teacher: 'DRA. LYRA NEBULA' }],
+        'ASTROBIOLOGIA': [{ subject: 'GENÉTICA DE EXOPLANETAS', teacher: 'ME. KAEL STARLIGHT' }],
+        'DIPLOMACIA GALÁCTICA': [{ subject: 'PROTOCOLOS DA FEDERAÇÃO', teacher: 'EMB. NOVA SOLARIS' }],
+        'PROCESSAMENTO DE ENERGIA': [{ subject: 'TERMODINÂMICA DE QUASARES', teacher: 'PROF. JAXON PULSAR' }],
+        'SEGURANÇA ORBITAL': [{ subject: 'DEFESA CONTRA ASTEROIDES', teacher: 'CAP. ION STORM' }]
     },
     2: {
-        'PROCESSOS GERENCIAIS': [{ subject: 'DESENVOLVIMENTO DE HABILIDADES HUMANAS DE GESTÃO', teacher: 'CARLOS JONATHAN DA SILVA' }],
-        'GESTÃO COMERCIAL': [{ subject: 'PLANEJAMENTO E PREVISÃO DE VENDAS', teacher: 'EDUARDO NEDER ISSA JUNIOR' }],
-        'GESTÃO DE RECURSOS HUMANOS': [{ subject: 'TÉCNICAS DE RECRUTAMENTO E SELEÇÃO DE PESSOAL', teacher: 'ELZA FÁTIMA ROSA VELOSO' }],
-        'MARKETING': [{ subject: 'MARKETING DE PRODUTO', teacher: 'KAREN PERROTTA LOPES DE ALMEIDA PRADO' }],
-        'GESTÃO FINANCEIRA': [{ subject: 'CONTABILIDADE E CONTROLADORIA', teacher: 'KELLY TEIXEIRA RODRIGUES' }]
+        'CIBERNÉTICA AVANÇADA': [{ subject: 'SINCRO-INTERFACE NEURAL', teacher: 'ENG. CYRUS CORE' }],
+        'LOGÍSTICA DE TELETRANSPORTE': [{ subject: 'ESTABILIZAÇÃO DE PORTAIS', teacher: 'DRA. TESS QUARK' }],
+        'GESTÃO DE COLÔNIAS': [{ subject: 'SOCIOLOGIA DE ASTEROIDES', teacher: 'PROF. MIRA ZENITH' }],
+        'MINERAÇÃO ESPACIAL': [{ subject: 'EXTRAÇÃO DE CRISTAIS KYBER', teacher: 'ME. ROARK GRAVITY' }],
+        'ARQUITETURA PLANETÁRIA': [{ subject: 'TERRAFORMAÇÃO SUSTENTÁVEL', teacher: 'ARQ. SOLA LUNAR' }]
     },
     3: {
-        'GESTÃO FINANCEIRA': [
-            { subject: 'ADMINISTRAÇÃO DE CAPITAL DE GIRO', teacher: 'ALEXANDRE MENDES DA SILVA' },
-            { subject: 'ANÁLISE DE CUSTO', teacher: 'ALINE MARIANE DE FARIA' },
-            { subject: 'MATEMÁTICA FINANCEIRA', teacher: 'BRUNO LESSA MEIRELES' },
-            { subject: 'LEGISLAÇÃO E PLANEJAMENTO TRIBUTÁRIO', teacher: 'FABIO DANIEL ROMANELLO VASQUES' },
-            { subject: 'MERCADO FINANCEIRO E DE CAPITAIS', teacher: 'JOÃO PAULO CAVALCANTE LIMA' },
-            { subject: 'GOVERNANÇA CORPORATIVA', teacher: 'JOÃO PAULO CAVALCANTE LIMA' },
-            { subject: 'DEMONSTRAÇÕES FINANCEIRAS E RELATÓRIOS CONTÁBEIS', teacher: 'WELINGTON NORBERTO CARNEIRO' }
+        'SISTEMAS DE DEFESA': [
+            { subject: 'ARTILHARIA DE PLASMA', teacher: 'GEN. ATLAS TITAN' },
+            { subject: 'CAMPOS DE FORÇA', teacher: 'DRA. VERA SHIELD' },
+            { subject: 'TACTICAS DE COMBATE NO VÁCUO', teacher: 'COM. DRAKE VOID' },
+            { subject: 'CRIPTOGRAFIA QUÂNTICA', teacher: 'ENG. BYTE BINARY' },
+            { subject: 'HIDRÁULICA EM ZERO G', teacher: 'PROF. FLUX FLOW' },
+            { subject: 'SENSORES DE LONGO ALCANCE', teacher: 'ME. SCAN RADAR' },
+            { subject: 'MANUTENÇÃO DE ANDROIDES', teacher: 'TECH. GEAR BOLT' }
         ],
-        'MARKETING': [
-            { subject: 'ESTRATÉGIA DE PREÇOS', teacher: 'CARLOS AUGUSTO DA SILVA LOURES' },
-            { subject: 'MARKETING DO SERVIÇO', teacher: 'EDUARDO NEDER ISSA JUNIOR' },
-            { subject: 'SEGMENTAÇÃO E POSICIONAMENTO DE MERCADO', teacher: 'FÁTIMA GUARDANI ROMITO' },
-            { subject: 'DISTRIBUIÇÃO, LOGÍSTICA E ADMINISTRAÇÃO DE VAREJO', teacher: 'LILIAN APARECIDA PASQUINI MIGUEL' }
+        'ESTRATÉGIA DE GUERRA': [
+            { subject: 'LOGÍSTICA DE FROTAS', teacher: 'ALM. RIGEL VEGA' },
+            { subject: 'INTELIGÊNCIA DE CAMPO', teacher: 'AGENT Z-10' },
+            { subject: 'RECONHECIMENTO DE TERRENO', teacher: 'SCOUT NOVA' },
+            { subject: 'ESQUADRÕES DE CAÇA', teacher: 'LID. PILOT ACE' }
         ],
-        'GESTÃO COMERCIAL': [
-            { subject: 'FORMAÇÃO DE PREÇO', teacher: 'CARLOS AUGUSTO DA SILVA LOURES' },
-            { subject: 'REMUNERAÇÃO', teacher: 'CELSO LIKIO YAMAGUTI' },
-            { subject: 'TRIBUTAÇÃO', teacher: 'PATRICIA SATOMI NISHIMURA' },
-            { subject: 'MÉTRICAS DE DESEMPENHO', teacher: 'TOMAZ AFFONSO PENNER' }
+        'MEDICINA ESPACIAL': [
+            { subject: 'BIO-REGENERAÇÃO ACELERADA', teacher: 'DR. MEDI SCAN' },
+            { subject: 'PSICOLOGIA DO ISOLAMENTO', teacher: 'DRA. PSI MIND' },
+            { subject: 'CIRURGIA ROBÓTICA', teacher: 'ME. SURGE AUTO' },
+            { subject: 'TOXICOLOGIA ALIENÍGENA', teacher: 'PROF. BIO HAZARD' }
         ],
-        'GESTÃO DE RECURSOS HUMANOS': [
-            { subject: 'APRENDIZAGEM ORGANIZACIONAL E EDUCAÇÃO CORPORATIVA', teacher: 'CARLOS JONATHAN DA SILVA SANTOS' },
-            { subject: 'PROCESSO ADMISSIONAL E DEMISSIONAL', teacher: 'CARLOS JONATHAN DA SILVA SANTOS' },
-            { subject: 'TÉCNICAS DE TREINAMENTO E DESENVOLVIMENTO', teacher: 'CARLOS JONATHAN DA SILVA SANTOS' },
-            { subject: 'GESTÃO DE CARREIRAS', teacher: 'MIRIAM RODRIGUES' },
-            { subject: 'TÉCNICAS DE REMUNERAÇÃO I', teacher: 'WERENNA FERNANNDA GARCIA BATISTA' },
-            { subject: 'RELAÇÕES TRABALHISTAS', teacher: 'WERENNA FERNANNDA GARCIA BATISTA' }
+        'COMUNICAÇÃO SUB-ESPACIAL': [
+            { subject: 'ANTENAS DE MATÉRIA ESCURA', teacher: 'DRA. SIGNAL WAVE' },
+            { subject: 'LINGUÍSTICA INTER-ESPÉCIES', teacher: 'PROF. GLOSSA TALK' },
+            { subject: 'REDES DE RELÉ GALÁCTICO', teacher: 'ENG. LINK MESH' },
+            { subject: 'HISTÓRIA DA GALÁXIA', teacher: 'DESC. CHRONO PAST' },
+            { subject: 'Ética Robótica', teacher: 'DRA. LOGIC RULE' },
+            { subject: 'FILOSOFIA DO COSMOS', teacher: 'ME. SAGE THOUGHT' }
         ],
-        'PROCESSOS GERENCIAIS': [
-            { subject: 'GESTÃO DE MARKETING', teacher: 'FÁTIMA GUARDANI ROMITO' },
-            { subject: 'GESTÃO FINANCEIRA', teacher: 'JOÃO PAULO CAVALCANTE LIMA' },
-            { subject: 'GESTÃO COMERCIAL', teacher: 'LILIAN APARECIDA PASQUINI MIGUEL' },
-            { subject: 'MODELAGEM DE PROCESSOS DE NEGÓCIOS', teacher: 'MARIA CAMPOS LAGE' },
-            { subject: 'GESTÃO DE OPERAÇÕES E LOGÍSTICA', teacher: 'MAURICIO HENRIQUE BENEDETTI' },
-            { subject: 'CONTABILIDADE GERENCIAL', teacher: 'WELINGTON NORBERTO CARNEIRO' }
+        'ENGENHARIA DE MATERIAIS': [
+            { subject: 'LIGAS DE ADAMANTIUM', teacher: 'ENG. FORGE IRON' },
+            { subject: 'ESTRUTURAS MONOLÍTICAS', teacher: 'ARQ. BLOCK STONE' },
+            { subject: 'MANUFATURA EM ÓRBITA', teacher: 'PROF. PRINT 3D' },
+            { subject: 'SÍNTESE DE COMBUSTÍVEL', teacher: 'ME. FUEL GAS' },
+            { subject: 'MECÂNICA DE EXOPLANETAS', teacher: 'ENG. GEAR SHIFT' },
+            { subject: 'SISTEMAS DE SUPORTE À VIDA', teacher: 'DRA. OXY BREATH' }
         ],
-        'GESTÃO COMERCIAL/MARKETING': [
-            { subject: 'COMUNICAÇÃO INTEGRADA I', teacher: 'TOMAZ AFFONSO PENNER' },
-            { subject: 'DEFIN DE CONSUM E SEU COMPORTAMENTO', teacher: 'TOMAZ AFFONSO PENNER' }
+        'XENO-ARQUEOLOGIA': [
+            { subject: 'RUÍNAS DE CIVILIZAÇÕES EXTINTAS', teacher: 'DRA. RELIC FIND' },
+            { subject: 'ARTEFATOS TECNOLÓGICOS', teacher: 'PROF. ANCIENT TECH' }
         ]
     },
     4: {
-        'GESTÃO FINANCEIRA': [
-            { subject: 'OPERAÇÕES CAMBIAIS E INTERNACIONAIS', teacher: 'ALEXANDRE MENDES DA SILVA' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'ALEXANDRE MENDES DA SILVA' },
-            { subject: 'ADMINISTRAÇÃO FINANCEIRA', teacher: 'ALINE MARIANE DE FARIA' },
-            { subject: 'DERIVATIVOS FINANCEIROS', teacher: 'ALINE MARIANE DE FARIA' },
-            { subject: 'PLANEJAMENTO E ORÇAMENTO EMPRESARIAL', teacher: 'ALINE MARIANE DE FARIA' },
-            { subject: 'ANÁLISE DE INVESTIMENTO', teacher: 'JOÃO PAULO CAVALCANTE LIMA' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'JOÃO PAULO CAVALCANTE LIMA' }
+        'CIÊNCIA DE DADOS ESTELARES': [
+            { subject: 'ALGORITMOS DE PREDIÇÃO DE SUPERNOVAS', teacher: 'PROF. DATA BYTE' },
+            { subject: 'PROJETO FINAL: EXPLORAÇÃO', teacher: 'DRA. VISION SCOPE' },
+            { subject: 'BIG DATA GALÁCTICO', teacher: 'ENG. CLOUD NEBULA' },
+            { subject: 'SISTEMAS AUTÔNOMOS', teacher: 'ME. BOT AUTO' },
+            { subject: 'MODELAGEM DE GALÁXIAS', teacher: 'PROF. SIM COSMOS' },
+            { subject: 'ESTATÍSTICA DE PÚSAR', teacher: 'DRA. MATH STAR' },
+            { subject: 'INTELIGÊNCIA ARTIFICIAL SENTIENTE', teacher: 'IA ORACLE' }
         ],
-        'GESTÃO COMERCIAL': [
-            { subject: 'MODELOS DE NEGÓCIO', teacher: 'CARLOS JONATHAN DA SILVA SANTOS' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'CARLOS JONATHAN DA SILVA SANTOS' },
-            { subject: 'HABILIDADES NEGOCIAIS', teacher: 'MARTA FABIANO SAMBIASE' },
-            { subject: 'SISTEMAS DE INFORMAÇÃO', teacher: 'SUELI DOS SANTOS LEITÃO' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'TOMAZ AFFONSO PENNER' }
+        'ADMINISTRAÇÃO DE ESTAÇÕES': [
+            { subject: 'GOVERNANÇA ORBITAL', teacher: 'GEN. BASE COMMAND' },
+            { subject: 'PROJETO FINAL: GESTÃO', teacher: 'PROF. PLAN LEAD' },
+            { subject: 'DIREITO ESPACIAL', teacher: 'ADV. LAW SPACE' },
+            { subject: 'SISTEMAS DE SEGURANÇA', teacher: 'OFF. GUARD SHIELD' },
+            { subject: 'OPERAÇÕES DE ATracagem', teacher: 'DOCK MASTER B' }
         ],
-        'GESTÃO COMERCIAL/GESTÃO FINANCEIRA': [
-            { subject: 'ANÁLISE DE CRÉDITO, COBRANÇA E RISCO', teacher: 'CARLOS EDUARDO GOMES' }
+        'TURISMO INTERPLANETÁRIO': [
+            { subject: 'CRUZEIROS DE LUXO EM SATURNO', teacher: 'STWD. LUX STAR' }
         ],
-        'GESTÃO COMERCIAL/MARKETING': [
-            { subject: 'COMUNICAÇÃO INTEGRADA II', teacher: 'TOMAZ AFFONSO PENNER' }
+        'RELAÇÕES DIPLOMÁTICAS': [
+            { subject: 'NEGOCIAÇÃO COM XENOS', teacher: 'EMB. PEACE TALK' }
         ],
-        'GESTÃO DE RECURSOS HUMANOS': [
-            { subject: 'TÉCNICAS DE REMUNERAÇÃO II', teacher: 'DARCY MITIKO MORI HANASHIRO' },
-            { subject: 'TÉCNICAS DE AVALIAÇÃO DE DESEMPENHO DE PESSOAS', teacher: 'MARIA LUISA MENDES TEIXEIRA' },
-            { subject: 'HIGIENE, MEDICINA E SEGURANÇA DO TRABALHO', teacher: 'NATHALIE BARBOSA REIS MONTEIRO' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'NATHALIE BARBOSA REIS MONTEIRO' },
-            { subject: 'TÉCNICAS DE CONSULTORIA INTERNA AO RH', teacher: 'SUELI DOS SANTOS LEITÃO' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'WERENNA FERNANNDA GARCIA BATISTA' },
-            { subject: 'COMUNICAÇÃO INTERNA', teacher: 'WERENNA FERNANNDA GARCIA BATISTA' }
+        'ENGENHARIA DE TERRAFORMAÇÃO': [
+            { subject: 'CONTROLE ATMOSFÉRICO', teacher: 'DRA. AIR FLOW' },
+            { subject: 'OCEANOGRAFIA DE EUROPA', teacher: 'PROF. DEEP SEA' },
+            { subject: 'ECOLOGIA DE MARTE', teacher: 'ME. GREEN RED' },
+            { subject: 'PROJETO FINAL: NOVO MUNDO', teacher: 'ENG. WORLD BUILD' },
+            { subject: 'BIOLOGIA SINTÉTICA', teacher: 'DRA. DNA SYNTH' },
+            { subject: 'AGRICULTURA HIDROPÔNICA', teacher: 'ME. PLANT GROW' },
+            { subject: 'ESTUDOS DE GRAVIDADE', teacher: 'PROF. WEIGHT LESS' }
         ],
-        'MARKETING': [
-            { subject: 'MARKETING VERDE', teacher: 'CARLOS AUGUSTO DA SILVA LOURES' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'CARLOS AUGUSTO DA SILVA LOURES' },
-            { subject: 'CUSTOMER RELATIONSHIP MANAGEMENT', teacher: 'FÁTIMA GUARDANI ROMITO' },
-            { subject: 'PLANO DE MARKETING E SISTEMAS DE INFORMAÇÃO', teacher: 'FÁTIMA GUARDANI ROMITO' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'FÁTIMA GUARDANI ROMITO' },
-            { subject: 'GESTÃO DE MARCAS', teacher: 'KAREN PERROTTA LOPES DE ALMEIDA' },
-            { subject: 'MARKETING DIGITAL', teacher: 'TOMAZ AFFONSO PENNER' }
+        'EXPLORAÇÃO DE FRONTEIRA': [
+            { subject: 'CARTOGRAFIA DO VÁCUO', teacher: 'CAPT. MAP WAY' },
+            { subject: 'PROJETO FINAL: FRONTEIRA', teacher: 'SCOUT X-1' },
+            { subject: 'SOBREVIVÊNCIA EM AMBIENTES EXTREMOS', teacher: 'SPEC. SURVIVE Z' },
+            { subject: 'GEOLOGIA DE COMETAS', teacher: 'PROF. ROCK DUST' },
+            { subject: 'PRIMEIRO CONTATO', teacher: 'DRA. HELLO WORLD' },
+            { subject: 'FOTOGRAFIA CÓSMICA', teacher: 'PHO. LENS LIGHT' },
+            { subject: 'MARCADORES DE NAVEGAÇÃO', teacher: 'ME. BEACON SIGN' }
         ],
-        'PROCESSOS GERENCIAIS': [
-            { subject: 'ANÁLISE EXPLORATÓRIA DE DADOS E RACIOCÍNIO ANALÍTICO', teacher: 'BRUNO LESSA MEIRELES' },
-            { subject: 'ESTRATÉGIA ORGANIZACIONAL', teacher: 'CLAUDIA FERNANDA FRANCESCHI KLEMENT' },
-            { subject: 'PROJETO INTEGRADOR', teacher: 'EDUARDO NEDER ISSA JUNIOR' },
-            { subject: 'RECURSOS HUMANOS ESTRATÉGICO', teacher: 'ELZA FÁTIMA ROSA VELOSO' },
-            { subject: 'GESTÃO DE SERVIÇOS TERCEIRIZADOS', teacher: 'NATHALIE BARBOSA REIS MONTEIRO' },
-            { subject: 'TÉCNICAS E GERENCIAMENTO DA INFORMAÇÃO', teacher: 'SUELI DOS SANTOS LEITÃO' }
+        'TÉCNICA DE PROPULSÃO': [
+            { subject: 'MOTORES DE ANTIMATÉRIA', teacher: 'ENG. CORE HEAT' },
+            { subject: 'FÍSICA DE BURACOS DE MINHOCA', teacher: 'PROF. HOLE TUBE' },
+            { subject: 'TESTES DE VOO EM ZERO-G', teacher: 'PIL. TEST FLY' },
+            { subject: 'RECURSOS DE INFRAESTRUTURA', teacher: 'ME. BASE WORK' },
+            { subject: 'MANUTENÇÃO DE NAVE-MÃE', teacher: 'ENG. SHIP FIX' },
+            { subject: 'CRONO-MECÂNICA', teacher: 'DRA. TIME GEAR' }
         ]
     }
 };
@@ -142,32 +142,32 @@ const SUBJECTS_DB = ACADEMIC_GRID;
 
 // Fallback: If no subjects found for a stage, use Generic list
 const GENERIC_SUBJECTS = {
-    'GESTÃO DE RECURSOS HUMANOS': [{ subject: 'CLIMA ORGANIZACIONAL', teacher: 'ALMIR MARTINS VIEIRA' }],
-    'GESTÃO COMERCIAL': [{ subject: 'DIREITOS DO CONSUMIDOR', teacher: 'FABIO DANIEL ROMANELLO VASQUES' }],
-    'LOGÍSTICA': [{ subject: 'INTRODUCAO A LOGISTICA', teacher: 'NATHALIE BARBOSA REIS MONTEIRO' }],
-    'GESTÃO FINANCEIRA': [{ subject: 'ECONOMIA E MERCADO', teacher: 'WALESKA ANDREZA FERREIRA' }],
-    'PROCESSOS GERENCIAIS': [{ subject: 'ECONOMIA', teacher: 'WALESKA ANDREZA FERREIRA' }],
-    'GESTÃO COMERCIAL/MARKETING': [{ subject: 'DEFIN DE CONSUM E SEU COMPORTAMENTO', teacher: 'TOMAZ AFFONSO PENNER' }]
+    'ENGENHARIA DE PROPULSÃO': [{ subject: 'DINÂMICA DE DOBRA ESPACIAL', teacher: 'PROF. ELIAS VORTEX' }],
+    'LOGÍSTICA DE TELETRANSPORTE': [{ subject: 'ESTABILIZAÇÃO DE PORTAIS', teacher: 'DRA. TESS QUARK' }],
+    'NAVEGAÇÃO INTERSTELAR': [{ subject: 'CARTOGRAFIA DE BURACOS NEGROS', teacher: 'DRA. LYRA NEBULA' }],
+    'CIÊNCIA DE DADOS ESTELARES': [{ subject: 'BIG DATA GALÁCTICO', teacher: 'ENG. CLOUD NEBULA' }],
+    'SEGURANÇA ORBITAL': [{ subject: 'DEFESA CONTRA ASTEROIDES', teacher: 'CAP. ION STORM' }],
+    'ADMINISTRAÇÃO DE ESTAÇÕES': [{ subject: 'GOVERNANÇA ORBITAL', teacher: 'GEN. BASE COMMAND' }]
 };
 
 const COMMON_SUBJECTS = {
     1: [
-        { subject: 'ADMINISTRAÇÃO CONTEMPORÂNEA', teacher: 'CLAUDIA FERNANDA FRANCESCHI KLEMENT' },
-        { subject: 'PRINCÍPIOS DE MARKETING', teacher: 'KAREN PERROTTA LOPES DE ALMEIDA PRADO' },
-        { subject: 'COMPORTAMENTO ORGANIZACIONAL', teacher: 'NATACHA BERTOIA DA SILVA' },
-        { subject: 'FUNDAMENTOS DE CONTABILIDADE E FINANÇAS', teacher: 'PATRICIA SATOMI NISHIMURA' }
+        { subject: 'ÉTICA INTERGALÁCTICA', teacher: 'CONSELHEIRO ZOG' },
+        { subject: 'SOBREVIVÊNCIA NO VÁCUO', teacher: 'INST. OXYGEN' },
+        { subject: 'MATEMÁTICA MULTIDIMENSIONAL', teacher: 'PROF. CALC STRATOS' },
+        { subject: 'HISTÓRIA DA TERRA ANTIGA', teacher: 'DRA. ARCHEO EARTH' }
     ],
     2: [
-        { subject: 'MATEMÁTICA E ESTATÍSTICA', teacher: 'BRUNO LESSA MEIRELES' },
-        { subject: 'SUSTENTABILIDADE E RESPONSABILIDADE SOCIAL', teacher: 'CLAUDIA FERNANDA FRANCESCHI KLEMENT' },
-        { subject: 'PLANEJAMENTO E GESTÃO DE PROJETOS', teacher: 'MAURICIO HENRIQUE BENEDETTI' },
-        { subject: 'GESTÃO DE PESSOAS', teacher: 'WERENNA FERNANNDA GARCIA BATISTA' }
+        { subject: 'FÍSICA DE PARTÍCULAS EXÓTICAS', teacher: 'DRA. ATOM SPLIT' },
+        { subject: 'BIOESTATÍSTICA ALIEN', teacher: 'ME. GENE LAB' },
+        { subject: 'PROJETOS DE ENGENHARIA CÓSMICA', teacher: 'ENG. BUILD FAST' },
+        { subject: 'PSICOLOGIA DE MASSAS PLANETÁRIAS', teacher: 'DRA. MIND FOCUS' }
     ],
     3: [
-        { subject: 'DIREITO EMPRESARIAL', teacher: 'FABIO DANIEL ROMANELLO VASQUES' }
+        { subject: 'LEGISLAÇÃO PLANETÁRIA', teacher: 'ADV. JUSTICE STAR' }
     ],
     4: [
-        { subject: 'PLANEJAMENTO E PROJETO DE CARREIRA', teacher: 'NATACHA BERTOIA DA SILVA' }
+        { subject: 'PREPARAÇÃO PARA O PRIMEIRO CONTATO', teacher: 'EMB. WELCOME' }
     ]
 };
 
@@ -482,14 +482,29 @@ function createPill(data, isCommon, dateStr, hIdx, itemIndex) {
     // Advanced Short Names mapping for cleaner UI
     let shortName = courseName;
     const mapping = {
-        'RECURSOS HUMANOS': 'RH',
-        'COMERCIAL/MARKETING': 'COM/MKT',
-        'COMERCIAL/GESTÃO FINANCEIRA': 'COM/GF',
-        'COMERCIAL': 'COM',
-        'MARKETING': 'MKT',
-        'LOGÍSTICA': 'LOG',
-        'PROCESSOS': 'PG',
-        'FINANCEIRA': 'GF'
+        'PROPULSÃO': 'PROP',
+        'NAVEGAÇÃO': 'NAV',
+        'ASTROBIOLOGIA': 'BIO',
+        'DIPLOMACIA': 'DIP',
+        'ENERGIA': 'ENE',
+        'SEGURANÇA': 'SEG',
+        'CIBERNÉTICA': 'CIB',
+        'TELETRANSPORTE': 'TELE',
+        'COLÔNIAS': 'COL',
+        'MINERAÇÃO': 'MIN',
+        'ARQUITETURA': 'ARQ',
+        'DEFESA': 'DEF',
+        'ESTRATÉGIA': 'EST',
+        'MEDICINA': 'MED',
+        'COMUNICAÇÃO': 'COM',
+        'MATERIAIS': 'MAT',
+        'ARQUEOLOGIA': 'ARQ',
+        'DADOS': 'DAT',
+        'ESTAÇÕES': 'EST',
+        'TURISMO': 'TUR',
+        'RELAÇÕES': 'REL',
+        'TERRAFORMAÇÃO': 'TERA',
+        'EXPLORAÇÃO': 'EXP'
     };
 
     for (const [key, val] of Object.entries(mapping)) {
