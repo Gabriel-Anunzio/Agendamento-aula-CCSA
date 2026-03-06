@@ -411,8 +411,19 @@ function renderCalendar() {
             d.setDate(d.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
 
+            const cellIsPast = isDatePast(dateStr);
             const cell = document.createElement('div');
-            cell.className = 'border-b border-r border-slate-200 min-h-[60px] relative hover:bg-slate-50 transition cursor-pointer p-1 flex flex-col gap-1';
+            cell.className = 'border-b border-r border-slate-200 min-h-[60px] relative transition p-1 flex flex-col gap-1 ' +
+                (cellIsPast ? 'bg-slate-100/60 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer');
+
+            // Past-date lock indicator (top-right corner)
+            if (cellIsPast) {
+                const lockIcon = document.createElement('div');
+                lockIcon.className = 'absolute top-0.5 right-0.5 text-slate-300';
+                lockIcon.innerHTML = '<i data-lucide="lock" class="w-2.5 h-2.5"></i>';
+                cell.appendChild(lockIcon);
+            }
+
             cell.onclick = (e) => {
                 if (!e.target.closest('.delete-btn')) {
                     openEditModal(dateStr, hIdx);
@@ -584,6 +595,11 @@ window.openEditModal = function (dateStr, hIdx) {
     errorMsg.classList.add('hidden');
     if (syncExpandable) syncExpandable.classList.add('hidden');
 
+    const past = isDatePast(dateStr);
+    const isAdminSession = sessionStorage.getItem('admin_edit_past') === 'granted';
+    // Clear one-time admin edit token after use
+    sessionStorage.removeItem('admin_edit_past');
+
     const key = `${state.activeStage}-${dateStr}-${hIdx}`;
     const items = state.assignments[key] || [];
 
@@ -616,6 +632,32 @@ window.openEditModal = function (dateStr, hIdx) {
         existingItemsContainer.innerHTML = '<div class="text-slate-500 text-sm italic py-2">Nenhuma aula agendada.</div>';
     }
 
+    // --- PAST DATE LOCK ---
+    const pastWarning = document.getElementById('past-date-warning');
+    const formEl = document.getElementById('assignment-form');
+    const pastUnlockSelect = document.getElementById('past-admin-unlock');
+
+    // Always populate the course select
+    const availableCourses = [...(COURSES_BY_STAGE[state.activeStage] || []), "ADMIN"];
+    courseSelect.innerHTML = availableCourses.map(cName => `<option value="${cName}">${cName}</option>`).join('');
+
+    if (past && !isAdminSession) {
+        // Show warning with admin-unlock dropdown, hide form
+        if (pastWarning) pastWarning.classList.remove('hidden');
+        if (formEl) formEl.classList.add('hidden');
+        // Populate the dedicated unlock select in the warning panel
+        if (pastUnlockSelect) {
+            pastUnlockSelect.innerHTML = '<option value="">-- Selecione --</option>' +
+                availableCourses.map(cName => `<option value="${cName}">${cName}</option>`).join('');
+        }
+        editModal.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+    } else {
+        if (pastWarning) pastWarning.classList.add('hidden');
+        if (formEl) formEl.classList.remove('hidden');
+    }
+
     // Reset Form
     teacherInput.value = '';
     subjectSelect.classList.remove('hidden');
@@ -625,16 +667,44 @@ window.openEditModal = function (dateStr, hIdx) {
     if (adminBlockWrapper) adminBlockWrapper.classList.add('hidden');
     if (adminIsCommon) adminIsCommon.checked = false;
 
-    // Fill Course Select
-    const availableCourses = [...(COURSES_BY_STAGE[state.activeStage] || []), "ADMIN"];
-    courseSelect.innerHTML = availableCourses.map(cName => `<option value="${cName}">${cName}</option>`).join('');
-
     updateFormVisibility(); // Triggers subject options
     editModal.classList.remove('hidden');
 }
 
 window.closeEditModal = function () {
     editModal.classList.add('hidden');
+}
+
+// Attempt to unlock past date scheduling (called from the warning panel's select)
+window.tryUnlockPastDate = function () {
+    const pastUnlockSelect = document.getElementById('past-admin-unlock');
+    if (!pastUnlockSelect || pastUnlockSelect.value !== 'ADMIN') return;
+
+    const pass = prompt('Acesso restrito. Digite a senha Admin:');
+    if (btoa(pass) !== _0x1b) {
+        alert('Senha incorreta!');
+        pastUnlockSelect.value = '';
+        return;
+    }
+
+    // Grant admin edit token and re-open modal
+    sessionStorage.setItem('admin_edit_past', 'granted');
+    if (editingSlot) {
+        const { dateStr, hourIdx } = editingSlot;
+        closeEditModal();
+        openEditModal(dateStr, hourIdx);
+        // Auto-select ADMIN course and set up the admin form
+        setTimeout(() => {
+            courseSelect.value = 'ADMIN';
+            subjectSelect.classList.add('hidden');
+            subjectInput.classList.remove('hidden');
+            subjectInput.value = '';
+            subjectIcon.classList.add('hidden');
+            teacherInput.value = 'Admin';
+            if (adminBlockWrapper) adminBlockWrapper.classList.remove('hidden');
+            checkSyncRequirement();
+        }, 0);
+    }
 }
 
 window.updateSubjectOptions = function () {
