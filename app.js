@@ -135,11 +135,6 @@ const ACADEMIC_GRID = {
     }
 };
 
-// Derived Tables (Backward Compatibility)
-const COURSES_BY_STAGE = {};
-Object.keys(ACADEMIC_GRID).forEach(s => COURSES_BY_STAGE[s] = Object.keys(ACADEMIC_GRID[s]));
-const SUBJECTS_DB = ACADEMIC_GRID;
-
 // Fallback: If no subjects found for a stage, use Generic list
 const GENERIC_SUBJECTS = {
     'ENGENHARIA DE PROPULSÃO': [{ subject: 'DINÂMICA DE DOBRA ESPACIAL', teacher: 'PROF. ELIAS VORTEX' }],
@@ -223,10 +218,10 @@ const deletePasswordInput = document.getElementById('delete-password');
 const passwordError = document.getElementById('password-error');
 const passwordModal = document.getElementById('password-modal');
 
-// Keys (Encoded to prevent direct F12 discovery)
-const _0x1a = 'Y2NzYW1hY2tlbnppZQ=='; // global
-const _0x1b = 'QW51bnppbw==';       // admin
-const _0x1c = 'bWFja2Vuemll';       // delete
+// Security Keys (Encoded)
+const PASS_GLOBAL_ENCODED = 'Y2NzYW1hY2tlbnppZQ=='; // ccsamackenzie
+const PASS_ADMIN_ENCODED = 'QW51bnppbw==';       // Anunzio
+const PASS_DELETE_ENCODED = 'bWFja2Vuemll';       // mackenzie
 
 let editingSlot = null; // { dateStr, hourIdx }
 let pendingDeleteIdx = null;
@@ -243,24 +238,37 @@ function isDatePast(dateStr) {
 
 // --- INIT ---
 function init() {
-    // Check Global Access first
+    // 1. Restore data from cache immediately (Safety first)
+    restoreFromPersistence();
+
+    // 2. Check Global Access
     if (sessionStorage.getItem('mack_access') === 'granted') {
         const modal = document.getElementById('global-access-modal');
         if (modal) modal.classList.add('hidden');
     }
 
     renderStageButtons();
-    renderCalendar(); // Render immediately (don't wait for cloud)
+    renderCalendar();
     setupFirebaseListeners();
-    setupMobileSync(); // Horizontal scroll sync
+    setupMobileSync();
     lucide.createIcons();
+}
 
-    // Listeners for Admin Custom Subject
-    if (subjectInput) {
-        subjectInput.addEventListener('input', checkSyncRequirement);
+function restoreFromPersistence() {
+    try {
+        const cachedAssignments = localStorage.getItem('agenda_assignments');
+        const cachedEvents = localStorage.getItem('agenda_events');
+        if (cachedAssignments) state.assignments = JSON.parse(cachedAssignments);
+        if (cachedEvents) state.events = JSON.parse(cachedEvents);
+    } catch (e) {
+        console.warn("Persistence Restore Error:", e);
     }
 }
 
+function syncLocalStorage() {
+    localStorage.setItem('agenda_assignments', JSON.stringify(state.assignments));
+    localStorage.setItem('agenda_events', JSON.stringify(state.events));
+}
 function setupMobileSync() {
     const scrollContainer = document.getElementById('calendar-scroll');
     const headerContainer = document.getElementById('week-header').parentElement;
@@ -276,32 +284,27 @@ function setupMobileSync() {
 function setupFirebaseListeners() {
     // Listen for Assignments
     db.ref('assignments').on('value', (snapshot) => {
-        console.log("Dados de agendamentos recebidos do Firebase:", snapshot.val());
         state.assignments = snapshot.val() || {};
+        syncLocalStorage(); // Save backup
         renderCalendar();
     }, (error) => {
-        console.error("Erro de PERMISSÃO ou CONEXÃO ao ler assignments:", error);
+        console.error("Firebase Sync Error (Assignments):", error);
     });
 
     // Listen for Events
     db.ref('events').on('value', (snapshot) => {
-        console.log("Dados de eventos recebidos do Firebase:", snapshot.val());
         state.events = snapshot.val() || {};
+        syncLocalStorage(); // Save backup
         renderCalendar();
     }, (error) => {
-        console.error("Erro de PERMISSÃO ou CONEXÃO ao ler events:", error);
+        console.error("Firebase Sync Error (Events):", error);
     });
 }
 
 function saveAssignments() {
     if (sessionStorage.getItem('mack_access') !== 'granted') return;
-    console.log("Tentando salvar agendamentos...", state.assignments);
-    db.ref('assignments').set(state.assignments)
-        .then(() => console.log("Agendamentos salvos com sucesso!"))
-        .catch((err) => {
-            console.error("FALHA AO SALVAR AGENDAMENTOS:", err);
-            alert("Erro ao salvar no Firebase: " + err.message);
-        });
+    syncLocalStorage(); // Immediate local save
+    db.ref('assignments').set(state.assignments);
 }
 
 function saveEvents() {
@@ -681,7 +684,7 @@ window.tryUnlockPastDate = function () {
     if (!pastUnlockSelect || pastUnlockSelect.value !== 'ADMIN') return;
 
     const pass = prompt('Acesso restrito. Digite a senha Admin:');
-    if (btoa(pass) !== _0x1b) {
+    if (btoa(pass) !== PASS_ADMIN_ENCODED) {
         alert('Senha incorreta!');
         pastUnlockSelect.value = '';
         return;
@@ -725,7 +728,7 @@ window.updateSubjectOptions = function () {
 
         if (courseName === 'ADMIN') {
             const pass = prompt("Acesso restrito. Digite a senha Admin:");
-            if (btoa(pass) !== _0x1b) {
+            if (btoa(pass) !== PASS_ADMIN_ENCODED) {
                 alert("Senha incorreta!");
                 courseSelect.selectedIndex = 0;
                 updateSubjectOptions();
@@ -749,7 +752,7 @@ window.updateSubjectOptions = function () {
         subjectIcon.classList.remove('hidden');
 
         // Get subjects from DB or Generic fallback
-        const stageSubjects = SUBJECTS_DB[stage] && SUBJECTS_DB[stage][courseName];
+        const stageSubjects = ACADEMIC_GRID[stage] && ACADEMIC_GRID[stage][courseName];
         options = stageSubjects || GENERIC_SUBJECTS[courseName] || [];
     }
 
@@ -866,7 +869,7 @@ window.checkGlobalAccess = function () {
     const modal = document.getElementById('global-access-modal');
 
     // Simple comparison with encoded key
-    if (btoa(input.value) === _0x1a) {
+    if (btoa(input.value) === PASS_GLOBAL_ENCODED) {
         sessionStorage.setItem('mack_access', 'granted');
         modal.classList.add('hidden');
     } else {
@@ -877,7 +880,7 @@ window.checkGlobalAccess = function () {
 
 window.checkPassword = function () {
     const password = deletePasswordInput.value;
-    const correctPassword = requireAdminForDelete ? _0x1b : _0x1c;
+    const correctPassword = requireAdminForDelete ? PASS_ADMIN_ENCODED : PASS_DELETE_ENCODED;
 
     if (btoa(password) === correctPassword) {
         if (pendingDeleteType === 'assignment') {
@@ -1098,7 +1101,7 @@ window.closeAdminLogin = function () {
 }
 
 window.checkAdminPassword = function () {
-    if (btoa(adminPasswordInput.value) === _0x1b) {
+    if (btoa(adminPasswordInput.value) === PASS_ADMIN_ENCODED) {
         adminLoginModal.classList.add('hidden');
         openAdminSettings();
     } else {
@@ -1141,89 +1144,105 @@ eventForm.onsubmit = (e) => {
     alert('Evento adicionado!');
 }
 
-window.exportReport = function () {
+window.exportReport = async function () {
     const assignments = state.assignments;
     if (!assignments || Object.keys(assignments).length === 0) {
-        alert("Nenhum dado encontrado para exportar.");
+        showToast("Nenhum dado encontrado para exportar.");
         return;
     }
 
-    const monthNames = [
-        "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
-    ];
+    showToast("Gerando relatório Excel...");
 
-    // Grouping by Course - Subject - Teacher
-    const reportData = {};
+    try {
+        const workbook = XLSX.utils.book_new();
 
-    for (const [key, items] of Object.entries(assignments)) {
-        const parts = key.split('-');
-        if (parts.length < 5) continue;
+        const monthNames = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
 
-        // stage-YYYY-MM-DD-hourIdx
-        const hourIdx = parts[parts.length - 1];
-        const dateStr = `${parts[1]}-${parts[2]}-${parts[3]}`;
+        // Preparar dados para a planilha
+        const rows = [];
+        // Cabeçalho solicitado pelo usuário:
+        // Coluna A: Nome curso
+        // Coluna B: Nome da disciplina
+        // Coluna C: Etapa que foi agendado
+        // Coluna D: Nome Professor
+        // Coluna E: Mês
+        // Coluna F: Data
+        // Coluna G: Hora
+        rows.push(["Nome curso", "Nome da disciplina", "Etapa", "Nome Professor", "Mês", "Data", "Hora"]);
 
-        const dateObj = new Date(dateStr + 'T00:00:00');
-        const day = dateObj.getDate();
-        const month = dateObj.getMonth();
-        const year = dateObj.getFullYear();
-        const hourRange = HOURS[parseInt(hourIdx)];
+        // Ordenar chaves para garantir ordem cronológica
+        const keys = Object.keys(assignments).sort((a, b) => {
+            const partsA = a.split('-');
+            const partsB = b.split('-');
+            const dateA = new Date(`${partsA[1]}-${partsA[2]}-${partsA[3]}T00:00:00`);
+            const dateB = new Date(`${partsB[1]}-${partsB[2]}-${partsB[3]}T00:00:00`);
+            if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+            if (partsA[0] !== partsB[0]) return partsA[0] - partsB[0];
+            return partsA[partsA.length - 1] - partsB[partsB.length - 1];
+        });
 
-        if (!hourRange) continue;
-
-        items.forEach(it => {
-            const course = it.type === 'common' ? 'TODOS OS CURSOS' : (it.courseName || 'N/A');
-            const groupKey = `${course} - ${it.subject} - ${it.teacher} - ${month}-${year}`;
-
-            if (!reportData[groupKey]) {
-                reportData[groupKey] = {
-                    header: `(${course}) - (${it.subject}) - (${it.teacher}) tinha aulas marcadas no mês de ${monthNames[month]} de ${year}`,
-                    slots: []
-                };
-            }
-
+        keys.forEach(key => {
+            const parts = key.split('-');
+            const stageId = parts[0];
+            const dateStr = `${parts[1]}-${parts[2]}-${parts[3]}`;
+            const hourIdx = parts[parts.length - 1];
+            const hourRange = HOURS[parseInt(hourIdx)];
             const hourOnly = hourRange.split(' - ')[0];
-            const isDuplicate = reportData[groupKey].slots.some(s => s.day === day && s.hour === hourOnly);
 
-            if (!isDuplicate) {
-                reportData[groupKey].slots.push({ day, hour: hourOnly });
-            }
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const dayOnly = dateObj.getDate();
+            const monthName = monthNames[dateObj.getMonth()];
+
+            // Formatar hora completa (Ex: 19:00:00 - 20:00:00)
+            const fullHourRange = hourRange.replace(/(\d{2}:\d{2})/g, "$1:00");
+
+            assignments[key].forEach(it => {
+                // Remover prefixos do professor (Prof., Dra., Me., etc)
+                let cleanTeacherName = it.teacher
+                    .replace(/^(PROF\.|DRA\.|DR\.|ME\.|CAPT\.|EMB\.|ENG\.|GEN\.|COM\.|AGENT|LID\.|TECH\.|CONSELHEIRO|INST\.|OFF\.|DOCK MASTER|STWD\.|ADV\.|ARQ\.|SCOUT|PILOT|SPEC\.|PHO\.|IA)\s+/i, '')
+                    .trim();
+
+                rows.push([
+                    it.type === 'common' ? 'EIXO COMUM' : (it.courseName || 'N/A'),
+                    it.subject,
+                    parseInt(stageId), // Apenas o número da etapa como dado numérico
+                    cleanTeacherName,
+                    monthName,
+                    dayOnly, // Apenas o dia
+                    fullHourRange // Hora completa com segundos
+                ]);
+            });
         });
+
+        // Criar worksheet
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+
+        // Configurar larguras das colunas
+        ws['!cols'] = [
+            { wch: 30 }, // Curso
+            { wch: 40 }, // Disciplina
+            { wch: 10 }, // Etapa
+            { wch: 25 }, // Professor
+            { wch: 15 }, // Mês
+            { wch: 12 }, // Data
+            { wch: 10 }  // Hora
+        ];
+
+        XLSX.utils.book_append_sheet(workbook, ws, "Relatório Geral");
+
+        // Exportar arquivo
+        const fileName = `Relatorio_Agendamento_Simplificado_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+
+        showToast("Relatório Excel exportado com sucesso!");
+
+    } catch (err) {
+        console.error("Erro na exportação:", err);
+        alert("Erro ao exportar Excel: " + err.message);
     }
-
-    // Build Text Content
-    let textContent = "RELATÓRIO DE EMERGÊNCIA - AGENDAMENTO CCSA\n";
-    textContent += "Gerado em: " + new Date().toLocaleString('pt-BR') + "\n";
-    textContent += "--------------------------------------------------\n\n";
-
-    for (const group of Object.values(reportData)) {
-        textContent += group.header + "\n";
-
-        // Final Sort: Day ASC, then Hour ASC
-        group.slots.sort((a, b) => {
-            if (a.day !== b.day) return a.day - b.day;
-            return a.hour.localeCompare(b.hour);
-        });
-
-        group.slots.forEach(slot => {
-            textContent += `Dia: ${slot.day.toString().padStart(2, '0')}\n`;
-            textContent += `Hora: ${slot.hour}\n`;
-        });
-        textContent += "\n";
-    }
-
-    // Download Logic
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Relatorio_Emergencia_CCSA_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
 }
 
-// Boot
 init();
