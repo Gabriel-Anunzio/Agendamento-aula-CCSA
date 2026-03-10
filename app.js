@@ -641,7 +641,7 @@ window.openEditModal = function (dateStr, hIdx) {
     const pastUnlockSelect = document.getElementById('past-admin-unlock');
 
     // Always populate the course select
-    const availableCourses = [...(COURSES_BY_STAGE[state.activeStage] || []), "ADMIN"];
+    const availableCourses = [...(Object.keys(ACADEMIC_GRID[state.activeStage] || {})), "ADMIN"];
     courseSelect.innerHTML = availableCourses.map(cName => `<option value="${cName}">${cName}</option>`).join('');
 
     if (past && !isAdminSession) {
@@ -651,7 +651,7 @@ window.openEditModal = function (dateStr, hIdx) {
         // Populate the dedicated unlock select in the warning panel
         if (pastUnlockSelect) {
             pastUnlockSelect.innerHTML = '<option value="">-- Selecione --</option>' +
-                availableCourses.map(cName => `<option value="${cName}">${cName}</option>`).join('');
+                (Object.keys(ACADEMIC_GRID[state.activeStage] || {})).map(cName => `<option value="${cName}">${cName}</option>`).join('');
         }
         editModal.classList.remove('hidden');
         lucide.createIcons();
