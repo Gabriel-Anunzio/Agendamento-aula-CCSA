@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="antialiased">
 
 <head>
     <meta charset="UTF-8">
@@ -191,7 +191,8 @@
     </style>
 </head>
 
-<body class="h-screen flex flex-col overflow-hidden">
+<body
+    class="h-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300 transform-gpu">
 
     <!-- Header: Premium Architecture -->
     <header class="bg-[#B9141A] text-white z-50 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.3)] relative">
@@ -224,6 +225,14 @@
 
             <!-- Global Actions -->
             <div class="flex items-center gap-3 sm:gap-6">
+                <!-- View Mode Toggle -->
+                <div
+                    class="flex items-center bg-white/10 dark:bg-black/20 rounded-2xl p-1 border border-white/10 shadow-inner group">
+                    <button id="view-weekly-btn" onclick="window.setViewMode('weekly')"
+                        class="flex-1 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 bg-white text-red-600 shadow-lg">Semana</button>
+                    <button id="view-daily-btn" onclick="window.setViewMode('daily')"
+                        class="flex-1 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 text-red-100 hover:bg-white/10">Dia</button>
+                </div>
                 <!-- Navigation Pack -->
                 <div class="flex items-center bg-black/15 rounded-2xl p-1.5 border border-white/10 shadow-inner">
                     <button onclick="goToToday()"
@@ -237,6 +246,12 @@
                             data-lucide="chevron-right" class="w-5 h-5"></i></button>
                 </div>
 
+                <button onclick="window.toggleTheme()"
+                    class="btn-premium w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl shadow-xl transition-all active:bg-white/30 flex items-center justify-center"
+                    id="theme-toggle" title="Alternar Modo Escuro">
+                    <i data-lucide="moon" class="w-5 h-5 sm:w-6 sm:h-6" id="theme-icon"></i>
+                </button>
+
                 <button onclick="openAdminLogin()"
                     class="btn-premium w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl shadow-xl transition-all active:bg-white/30"
                     title="Configurações Admin">
@@ -246,7 +261,7 @@
         </div>
 
         <!-- Bottom bar: Refined Controls -->
-        <div class="bg-black/5 px-5 py-3 sm:py-4 border-t border-white/10">
+        <div class="bg-black/5 dark:bg-black/20 px-5 py-3 sm:py-4 border-t border-white/10">
             <div class="max-w-[1920px] mx-auto flex flex-col xl:flex-row items-stretch xl:items-center gap-4">
                 <!-- Stage Switcher -->
                 <div
@@ -305,399 +320,554 @@
 
     <!-- Main Calendar Area -->
     <main class="flex-1 flex flex-col overflow-hidden relative bg-white">
-        <!-- Week Header -->
-        <div class="overflow-hidden border-b border-slate-200 bg-slate-50/80 backdrop-blur-md sticky top-0 z-30">
+        <main class="flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900 shadow-2xl relative">
+            <!-- Day Headers (Sticky) -->
             <div id="week-header"
-                class="grid grid-cols-[65px_repeat(7,minmax(150px,1fr))] lg:grid-cols-[65px_repeat(7,minmax(150px,1fr))] max-lg:grid-cols-[55px_repeat(7,minmax(130px,1fr))]">
-                <div class="p-3 border-r border-slate-200 bg-slate-100/50 flex items-center justify-center">
-                    <i data-lucide="clock" class="w-4 h-4 text-slate-400"></i>
+                class="grid grid-cols-[65px_repeat(7,1fr)] border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur z-30 shadow-sm">
+                <div class="border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50"></div>
+                <div id="header-sun" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
                 </div>
-                <div id="header-sun" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-                <div id="header-mon" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-                <div id="header-tue" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-                <div id="header-wed" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-                <div id="header-thu" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-                <div id="header-fri" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-                <div id="header-sat" class="p-2 sm:p-3 text-center border-r border-slate-200/60 last:border-0"></div>
-            </div>
-        </div>
-
-        <!-- Scrollable Grid Container -->
-        <div id="calendar-scroll" class="flex-1 overflow-auto bg-slate-50/30">
-            <div id="week-grid" class="week-grid">
-                <!-- Injected by JS -->
-            </div>
-        </div>
-    </main>
-
-    <!-- Edit Modal -->
-    <div id="edit-modal"
-        class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-[100] backdrop-blur-md transition-all duration-300">
-        <div
-            class="glass-white rounded-3xl w-full max-w-lg shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] flex flex-col max-h-[90vh] overflow-hidden m-4 transform animate-card border border-white/40">
-            <div class="px-8 py-6 border-b border-slate-200/60 flex justify-between items-center bg-white/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-                        <i data-lucide="plus-circle" class="text-red-600 w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900">Agendar Aula</h3>
-                        <p id="edit-slot-info" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                        </p>
-                    </div>
+                <div id="header-mon" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
                 </div>
-                <button onclick="closeEditModal()"
-                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-red-600">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div id="header-tue" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
+                </div>
+                <div id="header-wed" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
+                </div>
+                <div id="header-thu" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
+                </div>
+                <div id="header-fri" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
+                </div>
+                <div id="header-sat" class="p-2 sm:p-3 text-center"></div>
             </div>
 
-            <div class="p-8 overflow-y-auto custom-scroll">
-                <!-- Existing Items List -->
-                <div id="existing-items" class="mb-8 space-y-4"></div>
+            <!-- Scrollable Grid Area -->
+            <div id="calendar-scroll" class="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-950/30">
+                <div id="week-grid" class="week-grid min-w-[1100px] border-b border-slate-200 dark:border-slate-800">
+                    <!-- Data cells generated by JS -->
+                </div>
+            </div>
+        </main>
 
-                <!-- Past Date Warning (shown for non-admins on past dates) -->
-                <div id="past-date-warning" class="hidden pt-6 border-t border-slate-100">
-                    <div
-                        class="flex flex-col items-center gap-4 py-6 px-4 bg-slate-50 rounded-2xl border border-slate-200 text-center">
-                        <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center shadow-sm">
-                            <i data-lucide="lock" class="w-7 h-7 text-amber-500"></i>
+        <!-- Edit Modal -->
+        <div id="edit-modal"
+            class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-md">
+            <div
+                class="glass-white dark:bg-slate-900 dark:border-slate-700 dark:text-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh] border border-white/50">
+                <div class="px-8 py-6 border-b border-slate-200/60 flex justify-between items-center bg-white/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                            <i data-lucide="plus-circle" class="text-red-600 w-6 h-6"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-black text-slate-700 uppercase tracking-wide">Data no passado</p>
-                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Professores não podem agendar aulas
-                                em datas que já passaram.<br>Apenas o <span class="font-bold text-red-600">Admin</span>
-                                tem permissão.</p>
+                            <h3 class="text-xl font-bold text-gray-900">Agendar Aula</h3>
+                            <p id="edit-slot-info"
+                                class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            </p>
                         </div>
-                        <!-- Admin Unlock Selector -->
-                        <div class="w-full max-w-xs space-y-2">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Selecione o curso
-                                para liberar:</p>
-                            <div class="relative">
-                                <select id="past-admin-unlock"
-                                    class="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
-                                    onchange="tryUnlockPastDate()">
-                                </select>
-                                <i data-lucide="chevron-down"
-                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
+                    </div>
+                    <button onclick="closeEditModal()"
+                        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-red-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div class="p-8 overflow-y-auto custom-scroll">
+                    <!-- Existing Items List -->
+                    <div id="existing-items" class="mb-8 space-y-4"></div>
+
+                    <!-- Past Date Warning (shown for non-admins on past dates) -->
+                    <div id="past-date-warning" class="hidden pt-6 border-t border-slate-100">
+                        <div
+                            class="flex flex-col items-center gap-4 py-6 px-4 bg-slate-50 rounded-2xl border border-slate-200 text-center">
+                            <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center shadow-sm">
+                                <i data-lucide="lock" class="w-7 h-7 text-amber-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-slate-700 uppercase tracking-wide">Data no passado</p>
+                                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Professores não podem agendar
+                                    aulas
+                                    em datas que já passaram.<br>Apenas o <span
+                                        class="font-bold text-red-600">Admin</span>
+                                    tem permissão.</p>
+                            </div>
+                            <!-- Admin Unlock Selector -->
+                            <div class="w-full max-w-xs space-y-2">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Selecione o
+                                    curso
+                                    para liberar:</p>
+                                <div class="relative">
+                                    <select id="past-admin-unlock"
+                                        class="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
+                                        onchange="tryUnlockPastDate()">
+                                    </select>
+                                    <i data-lucide="chevron-down"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Add Form Section (hidden on past dates for non-admins) -->
-                <div id="add-form-section">
-                    <form id="assignment-form" class="space-y-6 pt-6 border-t border-slate-100">
-                        <!-- Axis Type Selector -->
-                        <div class="p-1.5 bg-slate-100 rounded-2xl grid grid-cols-2 gap-2">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="axis-type" value="specific" class="peer sr-only" checked
-                                    onchange="updateFormVisibility()">
-                                <div
-                                    class="py-3 rounded-xl text-center peer-checked:bg-white peer-checked:text-red-700 peer-checked:shadow-sm transition-all text-slate-500 text-xs font-black uppercase tracking-wide">
-                                    Eixo Específico
-                                </div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="axis-type" value="common" class="peer sr-only"
-                                    onchange="updateFormVisibility()">
-                                <div
-                                    class="py-3 rounded-xl text-center peer-checked:bg-white peer-checked:text-slate-800 peer-checked:shadow-sm transition-all text-slate-500 text-xs font-black uppercase tracking-wide">
-                                    Eixo Comum
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="space-y-4">
-                            <!-- Course Selector -->
-                            <div id="course-select-wrapper" class="space-y-1.5">
-                                <label
-                                    class="block text-[11px] uppercase text-slate-400 font-black tracking-widest ml-1">Curso</label>
-                                <div class="relative">
-                                    <select id="course-select"
-                                        class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
-                                        onchange="updateSubjectOptions()">
-                                    </select>
-                                    <i data-lucide="chevron-down"
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
-                                </div>
-                            </div>
-
-                            <!-- Subject -->
-                            <div class="space-y-1.5">
-                                <label
-                                    class="block text-[11px] uppercase text-slate-400 font-black tracking-widest ml-1">Componente
-                                    Curricular</label>
-                                <div class="relative">
-                                    <select id="subject-select"
-                                        class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
-                                        onchange="autoFillTeacher()">
-                                    </select>
-                                    <input type="text" id="subject-input" placeholder="Digite o componente..."
-                                        class="hidden w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none shadow-inner">
-                                    <i id="subject-dropdown-icon" data-lucide="chevron-down"
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
-                                </div>
-                            </div>
-
-                            <!-- Teacher -->
-                            <div class="space-y-1.5">
-                                <label
-                                    class="block text-[11px] uppercase text-slate-400 font-black tracking-widest ml-1">Professor
-                                    Responsável</label>
-                                <div
-                                    class="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-5 select-none">
-                                    <i data-lucide="user" class="w-4 h-4 text-red-400"></i>
-                                    <input type="text" id="teacher-name" readonly
-                                        class="bg-transparent border-none p-0 text-gray-700 text-sm font-bold w-full outline-none cursor-default">
-                                </div>
-                            </div>
-
-                            <!-- Admin Block Toggle -->
-                            <div id="admin-block-wrapper" class="hidden animate-in slide-in-from-top-2 duration-300">
-                                <label class="flex items-center gap-3 cursor-pointer p-1 group">
+                    <!-- Add Form Section (hidden on past dates for non-admins) -->
+                    <div id="add-form-section">
+                        <form id="assignment-form" onsubmit="window.handleFormSubmit(event)"
+                            class="space-y-6 pt-6 border-t border-slate-100">
+                            <!-- Axis Type Selector -->
+                            <div class="p-1.5 bg-slate-100 rounded-2xl grid grid-cols-2 gap-2">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="axis-type" value="specific" class="peer sr-only" checked
+                                        onchange="updateFormVisibility()">
                                     <div
-                                        class="relative inline-flex h-5 w-10 items-center rounded-full bg-slate-200 transition-colors group-hover:bg-slate-300 peer-checked:bg-red-600">
-                                        <input type="checkbox" id="admin-is-common" class="peer sr-only">
-                                        <span
-                                            class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all peer-checked:translate-x-5"></span>
+                                        class="py-3 rounded-xl text-center peer-checked:bg-white peer-checked:text-red-700 peer-checked:shadow-sm transition-all text-slate-500 text-xs font-black uppercase tracking-wide">
+                                        Eixo Específico
                                     </div>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-red-600 transition-colors">Bloquear
-                                        horário para todos os cursos</span>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="axis-type" value="common" class="peer sr-only"
+                                        onchange="updateFormVisibility()">
+                                    <div
+                                        class="py-3 rounded-xl text-center peer-checked:bg-white peer-checked:text-slate-800 peer-checked:shadow-sm transition-all text-slate-500 text-xs font-black uppercase tracking-wide">
+                                        Eixo Comum
+                                    </div>
                                 </label>
                             </div>
 
-                            <!-- Sync Logic UI Refined -->
-                            <div id="sync-ui-wrapper" class="hidden space-y-3">
-                                <button type="button" onclick="toggleSyncArea()" id="sync-toggle-btn"
-                                    class="flex items-center gap-2 text-slate-400 hover:text-red-600 transition-colors py-1 group">
-                                    <span id="sync-icon-container"
-                                        class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-red-50 transition-colors">
-                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                                    </span>
-                                    <span class="text-[10px] font-black uppercase tracking-widest">Sincronizar entre
-                                        etapas</span>
-                                </button>
+                            <div class="space-y-4">
+                                <!-- Course Selector -->
+                                <div id="course-select-wrapper" class="space-y-1.5">
+                                    <label
+                                        class="block text-[11px] uppercase text-slate-400 font-black tracking-widest ml-1">Curso</label>
+                                    <div class="relative">
+                                        <select id="course-select"
+                                            class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
+                                            onchange="updateSubjectOptions()">
+                                        </select>
+                                        <i data-lucide="chevron-down"
+                                            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
+                                    </div>
+                                </div>
 
-                                <div id="sync-expandable" class="hidden animate-in zoom-in-95 fade-in duration-300">
-                                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                                        <div class="flex items-start gap-2 mb-3">
-                                            <i data-lucide="info" class="w-3.5 h-3.5 text-red-500 mt-0.5"></i>
-                                            <p class="text-[10px] text-slate-500 font-bold uppercase leading-tight">
-                                                Essa aba é exclusiva para aulas compartilhadas entre etapas
-                                            </p>
+                                <!-- Subject -->
+                                <div class="space-y-1.5">
+                                    <label
+                                        class="block text-[11px] uppercase text-slate-400 font-black tracking-widest ml-1">Componente
+                                        Curricular</label>
+                                    <div class="relative">
+                                        <select id="subject-select"
+                                            class="w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none appearance-none"
+                                            onchange="autoFillTeacher()">
+                                        </select>
+                                        <input type="text" id="subject-input" placeholder="Digite o componente..."
+                                            class="hidden w-full bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-gray-900 text-sm font-semibold focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all outline-none shadow-inner">
+                                        <i id="subject-dropdown-icon" data-lucide="chevron-down"
+                                            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Teacher -->
+                                <div class="space-y-1.5">
+                                    <label
+                                        class="block text-[11px] uppercase text-slate-400 font-black tracking-widest ml-1">Professor
+                                        Responsável</label>
+                                    <div
+                                        class="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl py-3.5 px-5 select-none">
+                                        <i data-lucide="user" class="w-4 h-4 text-red-400"></i>
+                                        <input type="text" id="teacher-name" readonly
+                                            class="bg-transparent border-none p-0 text-gray-700 text-sm font-bold w-full outline-none cursor-default">
+                                    </div>
+                                </div>
+
+                                <!-- Admin Block Toggle -->
+                                <div id="admin-block-wrapper"
+                                    class="hidden animate-in slide-in-from-top-2 duration-300">
+                                    <label class="flex items-center gap-3 cursor-pointer p-1 group">
+                                        <div
+                                            class="relative inline-flex h-5 w-10 items-center rounded-full bg-slate-200 transition-colors group-hover:bg-slate-300 peer-checked:bg-red-600">
+                                            <input type="checkbox" id="admin-is-common" class="peer sr-only">
+                                            <span
+                                                class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-all peer-checked:translate-x-5"></span>
                                         </div>
-                                        <div class="relative">
-                                            <select id="sync-select"
-                                                class="w-full bg-white border border-slate-200 rounded-xl py-2 px-4 text-gray-900 text-[11px] font-bold outline-none ring-red-100 appearance-none">
-                                            </select>
-                                            <i data-lucide="chevron-down"
-                                                class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none"></i>
+                                        <span
+                                            class="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-red-600 transition-colors">Bloquear
+                                            horário para todos os cursos</span>
+                                    </label>
+                                </div>
+
+                                <!-- Sync Logic UI Refined -->
+                                <div id="sync-ui-wrapper" class="hidden space-y-3">
+                                    <button type="button" onclick="toggleSyncArea()" id="sync-toggle-btn"
+                                        class="flex items-center gap-2 text-slate-400 hover:text-red-600 transition-colors py-1 group">
+                                        <span id="sync-icon-container"
+                                            class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-red-50 transition-colors">
+                                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                        </span>
+                                        <span class="text-[10px] font-black uppercase tracking-widest">Sincronizar entre
+                                            etapas</span>
+                                    </button>
+
+                                    <div id="sync-expandable" class="hidden animate-in zoom-in-95 fade-in duration-300">
+                                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                                            <div class="flex items-start gap-2 mb-3">
+                                                <i data-lucide="info" class="w-3.5 h-3.5 text-red-500 mt-0.5"></i>
+                                                <p class="text-[10px] text-slate-500 font-bold uppercase leading-tight">
+                                                    Essa aba é exclusiva para aulas compartilhadas entre etapas
+                                                </p>
+                                            </div>
+                                            <div class="relative">
+                                                <select id="sync-select"
+                                                    class="w-full bg-white border border-slate-200 rounded-xl py-2 px-4 text-gray-900 text-[11px] font-bold outline-none ring-red-100 appearance-none">
+                                                </select>
+                                                <i data-lucide="chevron-down"
+                                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div id="error-msg"
-                            class="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[12px] font-bold hidden flex items-center gap-2 animate-bounce">
-                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                            <span></span>
-                        </div>
+                            <div id="error-msg"
+                                class="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[12px] font-bold hidden flex items-center gap-2 animate-bounce">
+                                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                                <span></span>
+                            </div>
 
-                        <button type="submit"
-                            class="w-full py-4 rounded-2xl bg-[#CC181E] hover:bg-[#A01217] text-white font-black uppercase tracking-widest text-xs transition-all shadow-[0_15px_30px_-10px_rgba(204,24,30,0.4)] active:scale-[0.98]">
-                            Confirmar Agendamento
-                        </button>
-                    </form>
-                </div><!-- /add-form-section -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Global Access Protection Modal -->
-    <div id="global-access-modal"
-        class="fixed inset-0 bg-[#B9141A] flex items-center justify-center z-[1000] backdrop-blur-xl">
-        <div
-            class="glass-white rounded-[3rem] w-full max-w-md shadow-2xl p-10 animate-card mx-4 border-white/20 border">
-            <div class="text-center mb-10">
-                <div
-                    class="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
-                    <i data-lucide="lock" class="w-10 h-10 text-red-600"></i>
-                </div>
-                <h2 class="text-3xl font-black text-gray-900 italic uppercase leading-none">Acesso Restrito</h2>
-                <div class="h-1 w-12 bg-red-600 mx-auto mt-4 rounded-full"></div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-6">Insira a senha de
-                    acesso
-                    para continuar</p>
-            </div>
-
-            <div class="space-y-6">
-                <div>
-                    <input type="password" id="global-password-input"
-                        class="w-full bg-slate-100/50 border-2 border-transparent rounded-[2rem] py-5 px-8 text-center text-xl font-bold text-gray-900 focus:border-red-600 focus:bg-white transition-all outline-none shadow-inner"
-                        placeholder="••••••••" onkeydown="if(event.key === 'Enter') checkGlobalAccess()">
-                </div>
-                <div id="global-password-error"
-                    class="text-red-600 text-[11px] font-black uppercase text-center hidden animate-bounce">
-                    Senha de acesso incorreta</div>
-
-                <button onclick="checkGlobalAccess()"
-                    class="w-full py-5 rounded-[2rem] bg-gray-900 text-white font-black uppercase tracking-widest text-sm shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] hover:bg-black hover:-translate-y-1 transition-all active:scale-95">
-                    Entrar no Sistema
-                </button>
-
-                <p class="text-center text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-4">CCSA -
-                    Gestão
-                    de Agendamentos</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin & Modals Section -->
-    <div id="admin-login-modal"
-        class="fixed inset-0 bg-slate-900/40 hidden flex items-center justify-center z-[120] backdrop-blur-md">
-        <div class="glass-white rounded-3xl w-full max-w-sm shadow-2xl p-8 animate-card">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="shield-check" class="w-8 h-8 text-red-600"></i>
-                </div>
-                <h3 class="text-2xl font-black text-gray-900 italic uppercase">Admin Access</h3>
-                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Credentials Required</p>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <input type="password" id="admin-password"
-                        class="w-full bg-slate-100/50 border-none rounded-2xl py-4 px-6 text-center text-lg font-bold text-gray-900 focus:ring-2 focus:ring-red-300 transition-all outline-none"
-                        placeholder="••••••••">
-                </div>
-                <div id="admin-password-error" class="text-red-600 text-[11px] font-black uppercase text-center hidden">
-                    Senha de segurança inválida</div>
-                <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button onclick="closeAdminLogin()"
-                        class="py-4 rounded-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase text-xs">Sair</button>
-                    <button onclick="checkAdminPassword()"
-                        class="py-4 rounded-2xl bg-gray-900 text-white font-black uppercase tracking-widest text-xs shadow-lg hover:bg-black transition-all active:scale-95">Acessar</button>
+                            <button type="submit"
+                                class="w-full py-4 rounded-2xl bg-[#CC181E] hover:bg-[#A01217] text-white font-black uppercase tracking-widest text-xs transition-all shadow-[0_15px_30px_-10px_rgba(204,24,30,0.4)] active:scale-[0.98]">
+                                Confirmar Agendamento
+                            </button>
+                        </form>
+                    </div><!-- /add-form-section -->
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Admin Settings Modal -->
-    <div id="admin-settings-modal"
-        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[120] backdrop-blur-sm">
-        <div class="glass bg-white rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="settings-2" class="text-red-600"></i>
-                    Configurações Avançadas
-                </h3>
-                <button onclick="closeAdminSettings()" class="text-slate-400 hover:text-red-600"><i
-                        data-lucide="x"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto">
-                <!-- Backup Report -->
-                <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                    <h4 class="text-sm font-bold text-blue-700 mb-2 uppercase tracking-wide">Relatório de Emergência
-                    </h4>
-                    <p class="text-xs text-blue-600 mb-4">Gere um arquivo de texto com todos os agendamentos
-                        registrados
-                        no sistema como backup.</p>
-                    <button onclick="exportReport()"
-                        class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
-                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                        Extrair Relatório (Excel)
+        <!-- Global Access Protection Modal -->
+        <div id="global-access-modal"
+            class="fixed inset-0 bg-[#B9141A] flex items-center justify-center z-[1000] backdrop-blur-xl">
+            <div
+                class="glass-white rounded-[3rem] w-full max-w-md shadow-2xl p-10 animate-card mx-4 border-white/20 border">
+                <div class="text-center mb-10">
+                    <div
+                        class="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <i data-lucide="lock" class="w-10 h-10 text-red-600"></i>
+                    </div>
+                    <h2 class="text-3xl font-black text-gray-900 italic uppercase leading-none">Acesso Restrito</h2>
+                    <div class="h-1 w-12 bg-red-600 mx-auto mt-4 rounded-full"></div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-6">Insira a senha de
+                        acesso
+                        para continuar</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <input type="password" id="global-password-input"
+                            class="w-full bg-slate-100/50 border-2 border-transparent rounded-[2rem] py-5 px-8 text-center text-xl font-bold text-gray-900 focus:border-red-600 focus:bg-white transition-all outline-none shadow-inner"
+                            placeholder="••••••••" onkeydown="if(event.key === 'Enter') checkGlobalAccess()">
+                    </div>
+                    <div id="global-password-error"
+                        class="text-red-600 text-[11px] font-black uppercase text-center hidden animate-bounce">
+                        Senha de acesso incorreta</div>
+
+                    <button onclick="checkGlobalAccess()"
+                        class="w-full py-5 rounded-[2rem] bg-gray-900 text-white font-black uppercase tracking-widest text-sm shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] hover:bg-black hover:-translate-y-1 transition-all active:scale-95">
+                        Entrar no Sistema
                     </button>
-                </div>
 
-                <!-- Delete All -->
-                <div class="mb-8 p-4 bg-red-50 rounded-lg border border-red-100">
-                    <h4 class="text-sm font-bold text-red-700 mb-2 uppercase tracking-wide">Zona de Perigo</h4>
-                    <p class="text-xs text-red-600 mb-4">Atenção: Esta ação irá apagar TODOS os agendamentos e
-                        eventos
-                        salvos permanentemente.</p>
-                    <button onclick="confirmClearAll()"
-                        class="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        Limpar Todos os Dados
-                    </button>
-                </div>
-
-                <hr class="mb-6 border-slate-100">
-
-                <!-- Add Event -->
-                <div>
-                    <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">Adicionar Evento
-                        Especial
-                    </h4>
-                    <form id="admin-event-form" class="space-y-4">
-                        <div>
-                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Título do
-                                Evento</label>
-                            <input type="text" id="event-text" required placeholder="Ex: Evento Business 9 horas"
-                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Data</label>
-                            <input type="date" id="event-date" required
-                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
-                        </div>
-                        <button type="submit"
-                            class="w-full py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-sm font-bold transition">
-                            Agendar Evento
-                        </button>
-                    </form>
+                    <p class="text-center text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-4">CCSA -
+                        Gestão
+                        de Agendamentos</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Password Modal -->
-    <div id="password-modal"
-        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[110] backdrop-blur-sm">
-        <div class="glass bg-white rounded-xl w-full max-w-sm shadow-2xl flex flex-col">
-            <div class="p-6 border-b border-slate-200">
-                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
-                    <i data-lucide="lock" class="w-5 h-5"></i>
-                    Excluir Aula
-                </h3>
-            </div>
-            <div class="p-6">
-                <p class="text-sm text-slate-600 mb-4">Para confirmar a exclusão, digite a senha de segurança.</p>
+        <!-- Admin & Modals Section -->
+        <div id="admin-login-modal"
+            class="fixed inset-0 bg-slate-900/40 hidden flex items-center justify-center z-[120] backdrop-blur-md">
+            <div class="glass-white rounded-3xl w-full max-w-sm shadow-2xl p-8 animate-card">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-red-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 italic uppercase">Admin Access</h3>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Credentials Required</p>
+                </div>
+
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Senha</label>
-                        <input type="password" id="delete-password"
-                            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
-                            placeholder="Digite a senha...">
+                        <input type="password" id="admin-password"
+                            class="w-full bg-slate-100/50 border-none rounded-2xl py-4 px-6 text-center text-lg font-bold text-gray-900 focus:ring-2 focus:ring-red-300 transition-all outline-none"
+                            placeholder="••••••••">
                     </div>
-                    <div id="password-error" class="text-red-500 text-xs hidden font-bold">Senha incorreta!</div>
-                    <div class="flex gap-3 mt-4">
-                        <button onclick="closePasswordModal()"
-                            class="flex-1 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold transition text-sm">Cancelar</button>
-                        <button onclick="checkPassword()"
-                            class="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition text-sm">Excluir</button>
+                    <div id="admin-password-error"
+                        class="text-red-600 text-[11px] font-black uppercase text-center hidden">
+                        Senha de segurança inválida</div>
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <button onclick="closeAdminLogin()"
+                            class="py-4 rounded-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase text-xs">Sair</button>
+                        <button onclick="checkAdminPassword()"
+                            class="py-4 rounded-2xl bg-gray-900 text-white font-black uppercase tracking-widest text-xs shadow-lg hover:bg-black transition-all active:scale-95">Acessar</button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Toast Notification -->
-    <div id="toast"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 lg:left-auto lg:right-8 lg:translate-x-0 bg-gray-900 text-white px-8 py-5 rounded-[2rem] shadow-2xl translate-y-24 opacity-0 transition-all duration-500 flex items-center gap-4 z-[1000] border border-white/10">
-        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-            <i data-lucide="check" class="text-green-400 w-6 h-6"></i>
-        </div>
-        <div class="flex flex-col">
-            <span class="text-xs font-black uppercase tracking-widest text-white/50">Sistema Galáctico</span>
-            <span id="toast-msg" class="text-sm font-bold">Operação concluída com sucesso.</span>
-        </div>
-    </div>
+        <!-- Admin Settings Modal -->
+        <div id="admin-settings-modal"
+            class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[120] backdrop-blur-sm">
+            <div class="glass bg-white rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="settings-2" class="text-red-600"></i>
+                        Configurações Avançadas
+                    </h3>
+                    <button onclick="closeAdminSettings()" class="text-slate-400 hover:text-red-600"><i
+                            data-lucide="x"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto">
+                    <!-- Backup Report -->
+                    <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <h4 class="text-sm font-bold text-blue-700 mb-2 uppercase tracking-wide">Relatório de Emergência
+                        </h4>
+                        <p class="text-xs text-blue-600 mb-4">Gere um arquivo de texto com todos os agendamentos
+                            registrados
+                            no sistema como backup.</p>
+                        <button onclick="exportReport()"
+                            class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                            Extrair Relatório (Excel)
+                        </button>
+                    </div>
 
-    <script src="app.js"></script>
+                    <!-- Clear Data -->
+                    <div class="border-b border-slate-200 dark:border-slate-800 pb-6 mb-6">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">
+                            Limpar Dados</h4>
+                        <p class="text-xs text-slate-500 mb-4">Apaga todos os agendamentos e eventos permanentemente.
+                        </p>
+                        <button onclick="confirmClearAll()"
+                            class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition">
+                            Limpar Banco de Dados
+                        </button>
+                    </div>
+
+                    <!-- Academic Grid Management -->
+                    <div class="border-b border-slate-200 dark:border-slate-800 pb-6 mb-6">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">
+                            Gerenciar Grade Acadêmica</h4>
+                        <p class="text-xs text-slate-500 mb-4">Adicione ou remova cursos e disciplinas da listagem
+                            principal.</p>
+                        <button onclick="openGridManager()"
+                            class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-slate-800 hover:text-white transition flex items-center gap-2">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Abrir Gerenciador de Grade
+                        </button>
+                    </div>
+
+                    <hr class="mb-6 border-slate-100">
+
+                    <!-- Add Event -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">Adicionar Evento
+                            Especial
+                        </h4>
+                        <form id="admin-event-form" class="space-y-4">
+                            <div>
+                                <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Título do
+                                    Evento</label>
+                                <input type="text" id="event-text" required placeholder="Ex: Evento Business 9 horas"
+                                    class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Data</label>
+                                <input type="date" id="event-date" required
+                                    class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                            </div>
+                            <button type="submit"
+                                class="w-full py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-sm font-bold transition">
+                                Agendar Evento
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Manager Modal -->
+        <div id="grid-manager-modal"
+            class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[110] p-4 backdrop-blur-md">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-800">
+                <div
+                    class="px-8 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 dark:bg-white flex items-center justify-center">
+                            <i data-lucide="database" class="w-5 h-5 text-white dark:text-slate-800"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">
+                                Gerenciador de Grade</h2>
+                            <div class="flex items-center gap-2 mt-1">
+                                <select id="gm-stage-select" onchange="window.changeGMStage(this.value)"
+                                    class="text-[10px] bg-slate-200 dark:bg-slate-700 border-none rounded px-2 py-1 font-bold uppercase text-slate-600 dark:text-slate-300 outline-none">
+                                    <option value="1">Etapa 1</option>
+                                    <option value="2">Etapa 2</option>
+                                    <option value="3">Etapa 3</option>
+                                    <option value="4">Etapa 4</option>
+                                </select>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">• Configuração
+                                    Dinâmica</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="closeGridManager()"
+                        class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors">
+                        <i data-lucide="x" class="w-6 h-6 text-slate-400"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-auto p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Axis Sidebar/Toggle -->
+                    <div class="space-y-6">
+                        <div class="p-1 bg-slate-100 dark:bg-slate-800 rounded-xl grid grid-cols-2 gap-1">
+                            <button onclick="window.setGMAxis('specific')" id="gm-btn-specific"
+                                class="py-2.5 rounded-lg text-[10px] font-black uppercase transition-all bg-white dark:bg-slate-700 text-red-600 shadow-sm">Eixo
+                                Específico</button>
+                            <button onclick="window.setGMAxis('common')" id="gm-btn-common"
+                                class="py-2.5 rounded-lg text-[10px] font-black uppercase transition-all text-slate-500 hover:text-slate-700">Eixo
+                                Comum</button>
+                        </div>
+
+                        <div id="gm-courses-section" class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase">Cursos</h3>
+                                <button onclick="addNewCourse()"
+                                    class="text-[10px] font-bold bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition">
+                                    + Novo Curso</button>
+                            </div>
+                            <div id="gm-courses-list" class="space-y-2 max-h-[400px] overflow-auto pr-2">
+                                <!-- Courses injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subjects List -->
+                    <div class="space-y-4 border-l border-slate-100 dark:border-slate-800 lg:pl-8">
+                        <div id="gm-subjects-header" class="hidden">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase truncate max-w-[200px]"
+                                    id="gm-selected-course-name">Selecione um curso</h3>
+                                <button onclick="addNewSubject()"
+                                    class="text-[10px] font-bold bg-slate-800 dark:bg-slate-100 dark:text-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-black transition">
+                                    + Nova Disciplina</button>
+                            </div>
+                            <div id="gm-subjects-list" class="space-y-2 max-h-[400px] overflow-auto pr-2">
+                                <!-- Subjects injected here -->
+                            </div>
+                        </div>
+                        <div id="gm-no-selection"
+                            class="h-full flex flex-col items-center justify-center text-slate-400 opacity-50 space-y-2">
+                            <i data-lucide="arrow-left" class="w-8 h-8"></i>
+                            <p class="text-xs uppercase font-bold tracking-widest">Selecione um curso ao lado</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="px-8 py-5 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center gap-3">
+                    <button onclick="toggleBulkEntry()"
+                        class="text-[10px] font-bold text-slate-500 hover:text-red-600 transition uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i> Inserir em Massa (Tabela)
+                    </button>
+                    <button onclick="saveGridToFirebase()"
+                        class="px-6 py-2.5 bg-[#B9141A] text-white rounded-xl text-xs font-bold shadow-lg hover:shadow-red-600/20 transition-all transform active:scale-95">Salvar
+                        Alterações no Banco</button>
+                </div>
+
+                <!-- Bulk Entry Overlay -->
+                <div id="gm-bulk-overlay"
+                    class="absolute inset-0 bg-white/95 dark:bg-slate-900/95 z-20 hidden flex flex-col p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 dark:text-white uppercase">Inserção em Massa
+                            </h3>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Cole sua lista de
+                                disciplinas abaixo</p>
+                        </div>
+                        <button onclick="toggleBulkEntry()"
+                            class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors">
+                            <i data-lucide="x" class="w-6 h-6 text-slate-400"></i>
+                        </button>
+                    </div>
+                    <div class="flex-1 flex flex-col gap-4">
+                        <p class="text-xs text-slate-600 dark:text-slate-400">Formato: <span
+                                class="font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">Disciplina |
+                                Professor</span> (uma por linha)</p>
+                        <textarea id="gm-bulk-input"
+                            placeholder="Ex:&#10;CALCULO I | PROF. NEWTON&#10;FISICA I | PROF. EINSTEIN"
+                            class="flex-1 w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm font-mono focus:ring-2 focus:ring-red-600 focus:outline-none dark:text-white"></textarea>
+                        <div class="flex gap-3">
+                            <button onclick="processBulkEntry()"
+                                class="flex-1 py-3 bg-slate-800 dark:bg-slate-100 dark:text-slate-900 text-white rounded-xl text-sm font-bold hover:bg-black transition-all">Adicionar
+                                ao Curso Selecionado</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Modal -->
+        <div id="password-modal"
+            class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[110] backdrop-blur-sm">
+            <div class="glass bg-white rounded-xl w-full max-w-sm shadow-2xl flex flex-col">
+                <div class="p-6 border-b border-slate-200">
+                    <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                        Excluir Aula
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-slate-600 mb-4">Para confirmar a exclusão, digite a senha de segurança.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Senha</label>
+                            <input type="password" id="delete-password"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
+                                placeholder="Digite a senha...">
+                        </div>
+                        <div id="password-error" class="text-red-500 text-xs hidden font-bold">Senha incorreta!</div>
+                        <div class="flex gap-3 mt-4">
+                            <button onclick="closePasswordModal()"
+                                class="flex-1 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold transition text-sm">Cancelar</button>
+                            <button onclick="checkPassword()"
+                                class="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition text-sm">Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast"
+            class="fixed bottom-8 left-1/2 -translate-x-1/2 lg:left-auto lg:right-8 lg:translate-x-0 bg-gray-900 text-white px-8 py-5 rounded-[2rem] shadow-2xl translate-y-24 opacity-0 transition-all duration-500 flex items-center gap-4 z-[1000] border border-white/10">
+            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                <i data-lucide="check" class="text-green-400 w-6 h-6"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xs font-black uppercase tracking-widest text-white/50">Sistema Galáctico</span>
+                <span id="toast-msg" class="text-sm font-bold">Operação concluída com sucesso.</span>
+            </div>
+        </div>
+
+        <!-- Modular Scripts -->
+        <script src="js/theme-service.js"></script>
+        <script src="js/constants.js"></script>
+        <script src="js/state.js"></script>
+        <script src="js/firebase-service.js"></script>
+        <script src="js/dom-utils.js"></script>
+        <script src="js/ui-service.js"></script>
+        <script src="js/calendar-service.js"></script>
+        <script src="js/admin-service.js"></script>
+        <script src="js/logic-service.js"></script>
+        <script src="js/grid-manager-service.js"></script>
+        <script src="js/main.js"></script>
 </body>
 
 </html>

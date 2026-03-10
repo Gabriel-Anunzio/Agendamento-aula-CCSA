@@ -683,11 +683,19 @@ window.tryUnlockPastDate = function () {
     const pastUnlockSelect = document.getElementById('past-admin-unlock');
     if (!pastUnlockSelect || pastUnlockSelect.value !== 'ADMIN') return;
 
-    const pass = prompt('Acesso restrito. Digite a senha Admin:');
-    if (btoa(pass) !== PASS_ADMIN_ENCODED) {
-        alert('Senha incorreta!');
-        pastUnlockSelect.value = '';
-        return;
+    // Use session-based admin verification
+    if (sessionStorage.getItem('admin_verified') !== 'granted') {
+        const pass = prompt('Acesso restrito. Digite a senha Admin:');
+        if (pass === null) {
+            pastUnlockSelect.value = '';
+            return;
+        }
+        if (btoa(pass) !== PASS_ADMIN_ENCODED) {
+            alert('Senha incorreta!');
+            pastUnlockSelect.value = '';
+            return;
+        }
+        sessionStorage.setItem('admin_verified', 'granted');
     }
 
     // Grant admin edit token and re-open modal
@@ -699,15 +707,21 @@ window.tryUnlockPastDate = function () {
         // Auto-select ADMIN course and set up the admin form
         setTimeout(() => {
             courseSelect.value = 'ADMIN';
-            subjectSelect.classList.add('hidden');
-            subjectInput.classList.remove('hidden');
-            subjectInput.value = '';
-            subjectIcon.classList.add('hidden');
-            teacherInput.value = 'Admin';
-            if (adminBlockWrapper) adminBlockWrapper.classList.remove('hidden');
-            checkSyncRequirement();
+            // Trigger UI update manually without prompt
+            updateAdminUI();
         }, 0);
     }
+}
+
+// Helper to set Admin UI state without triggering prompts
+function updateAdminUI() {
+    subjectSelect.classList.add('hidden');
+    subjectInput.classList.remove('hidden');
+    subjectInput.value = '';
+    subjectIcon.classList.add('hidden');
+    teacherInput.value = 'Admin';
+    if (adminBlockWrapper) adminBlockWrapper.classList.remove('hidden');
+    checkSyncRequirement();
 }
 
 window.updateSubjectOptions = function () {
@@ -727,29 +741,26 @@ window.updateSubjectOptions = function () {
         if (!courseName) return;
 
         if (courseName === 'ADMIN') {
-            const pass = prompt("Acesso restrito. Digite a senha Admin:");
-            if (btoa(pass) !== PASS_ADMIN_ENCODED) {
-                alert("Senha incorreta!");
-                courseSelect.selectedIndex = 0;
-                updateSubjectOptions();
-                return;
+            if (sessionStorage.getItem('admin_verified') !== 'granted') {
+                const pass = prompt("Acesso restrito. Digite a senha Admin:");
+                if (pass === null || btoa(pass) !== PASS_ADMIN_ENCODED) {
+                    if (pass !== null) alert("Senha incorreta!");
+                    // Reset to first available course safely
+                    courseSelect.selectedIndex = 0;
+                    // Do NOT call updateSubjectOptions recursively here if it triggers prompt again
+                    // Instead, just reset the standard UI
+                    resetToStandardUI();
+                    return;
+                }
+                sessionStorage.setItem('admin_verified', 'granted');
             }
             // Admin setup
-            subjectSelect.classList.add('hidden');
-            subjectInput.classList.remove('hidden');
-            subjectInput.value = '';
-            subjectIcon.classList.add('hidden');
-            teacherInput.value = 'Admin';
-            if (adminBlockWrapper) adminBlockWrapper.classList.remove('hidden');
-            checkSyncRequirement();
+            updateAdminUI();
             return;
         }
 
         // Standard setup
-        if (adminBlockWrapper) adminBlockWrapper.classList.add('hidden');
-        subjectSelect.classList.remove('hidden');
-        subjectInput.classList.add('hidden');
-        subjectIcon.classList.remove('hidden');
+        resetToStandardUI();
 
         // Get subjects from DB or Generic fallback
         const stageSubjects = ACADEMIC_GRID[stage] && ACADEMIC_GRID[stage][courseName];
@@ -762,6 +773,13 @@ window.updateSubjectOptions = function () {
 
     autoFillTeacher();
     checkSyncRequirement();
+}
+
+function resetToStandardUI() {
+    if (adminBlockWrapper) adminBlockWrapper.classList.add('hidden');
+    subjectSelect.classList.remove('hidden');
+    subjectInput.classList.add('hidden');
+    subjectIcon.classList.remove('hidden');
 }
 
 function checkSyncRequirement() {
