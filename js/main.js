@@ -26,14 +26,8 @@ window.init = function () {
 window.handleDateSelectChange = function () {
     const y = parseInt(window.dom.yearSelect.value);
     const m = parseInt(window.dom.monthSelect.value);
-    function getStartOfWeek(date) {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day;
-        return new Date(d.setDate(diff));
-    }
     const newDate = new Date(y, m, 1);
-    window.state.currentWeekStart = getStartOfWeek(newDate);
+    window.state.currentWeekStart = new Date(newDate); // Start exactly on the 1st
     window.state.activeDate = newDate.toISOString().split('T')[0];
     window.renderCalendar();
 };

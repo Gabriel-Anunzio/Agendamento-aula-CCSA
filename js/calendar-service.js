@@ -9,6 +9,12 @@ window.renderHeader = function () {
     const midWeek = new Date(start);
     midWeek.setDate(midWeek.getDate() + 3);
 
+    // Get all header containers to clear them first (since the order is now dynamic)
+    ids.forEach(id => {
+        const el = document.getElementById(`header-${id}`);
+        if (el) el.classList.add('hidden');
+    });
+
     const targetMonth = parseInt(window.dom.monthSelect.value);
     const targetYear = parseInt(window.dom.yearSelect.value);
 
@@ -28,40 +34,74 @@ window.renderHeader = function () {
     if (window.dom.monthSelect) window.dom.monthSelect.value = preferredMonth;
     if (window.dom.yearSelect) window.dom.yearSelect.value = Math.max(2026, preferredYear);
 
+    const headerContainers = Array.from(document.querySelectorAll('#week-header > div:not(:first-child)'));
+
     for (let i = 0; i < 7; i++) {
         const d = new Date(start);
         d.setDate(d.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
-        const dayContainer = document.getElementById(`header-${ids[i]}`);
+        
+        const dayIdx = d.getDay();
+        const dayContainer = headerContainers[i];
+        
         if (dayContainer) {
             const isToday = new Date().toDateString() === d.toDateString();
             const isActive = window.state.activeDate === dateStr;
 
             dayContainer.innerHTML = `
-                <div class="text-xs ${isToday ? 'text-red-600' : 'text-slate-500'} uppercase font-bold">${days[i]}</div>
-                <div class="text-xl font-bold ${isActive ? 'bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto mt-1' : 'text-slate-800'}">${d.getDate()}</div>`;
+                <div class="text-[10px] sm:text-xs ${isToday ? 'text-red-600' : 'text-slate-500'} uppercase font-bold">${days[dayIdx]}</div>
+                <div class="text-lg sm:text-xl font-bold ${isActive ? 'bg-red-600 text-white w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mx-auto mt-1' : 'text-slate-800 dark:text-slate-200'}">${d.getDate()}</div>`;
 
             // CSS Toggle for visibility
             if (window.state.viewMode === 'daily') {
-                if (isActive) dayContainer.classList.remove('hidden');
-                else dayContainer.classList.add('hidden');
+                if (isActive) {
+                    dayContainer.classList.remove('hidden');
+                    dayContainer.style.display = 'block';
+                } else {
+                    dayContainer.classList.add('hidden');
+                    dayContainer.style.display = 'none';
+                }
             } else {
                 dayContainer.classList.remove('hidden');
+                dayContainer.style.display = 'block';
             }
         }
     }
 
     // Grid adjustment for Daily mode
+    const weekHeader = document.getElementById('week-header');
+    const headerScroll = document.getElementById('week-header-scroll');
+
     if (window.dom.weekGrid) {
         if (window.state.viewMode === 'daily') {
-            window.dom.weekGrid.style.gridTemplateColumns = '65px 1fr';
+            window.dom.weekGrid.style.gridTemplateColumns = '50px 1fr';
             window.dom.weekGrid.classList.add('daily-view');
-            document.getElementById('week-header').style.gridTemplateColumns = '65px 1fr';
+            window.dom.weekGrid.style.minWidth = 'auto'; // Break min-width for mobile daily view
+            if (weekHeader) {
+                weekHeader.style.gridTemplateColumns = '50px 1fr';
+                weekHeader.style.minWidth = 'auto';
+            }
+            if (headerScroll) headerScroll.style.overflowX = 'hidden';
         } else {
             window.dom.weekGrid.style.gridTemplateColumns = '';
             window.dom.weekGrid.classList.remove('daily-view');
-            document.getElementById('week-header').style.gridTemplateColumns = '';
+            window.dom.weekGrid.style.minWidth = ''; 
+            if (weekHeader) {
+                weekHeader.style.gridTemplateColumns = '';
+                weekHeader.style.minWidth = '';
+            }
+            if (headerScroll) headerScroll.style.overflowX = 'auto';
         }
+    }
+};
+
+window.setupMobileSync = function() {
+    const grid = document.getElementById('calendar-scroll');
+    const header = document.getElementById('week-header-scroll');
+    if (grid && header) {
+        grid.addEventListener('scroll', () => {
+            header.scrollLeft = grid.scrollLeft;
+        });
     }
 };
 
@@ -83,23 +123,34 @@ window.renderCalendar = function () {
             const d = new Date(start);
             d.setDate(d.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
-            const cellIsPast = window.isDatePast(dateStr);
-            const blockLabel = window.state.blocks[dateStr];
-
-            // Skip other columns in daily mode
             const isActive = window.state.activeDate === dateStr;
             if (window.state.viewMode === 'daily' && !isActive) continue;
+
+            const cellIsPast = window.isDatePast(dateStr);
+            const blockObj = window.state.blocks[dateStr];
 
             const cell = document.createElement('div');
             cell.className = 'border-b border-r border-slate-200 dark:border-slate-800 min-h-[60px] relative transition p-1 flex flex-col gap-1 ' +
                 (cellIsPast ? 'bg-slate-100/60 dark:bg-slate-800/40 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer');
 
-            if (blockLabel) {
-                cell.className += ' bg-red-100/30 dark:bg-red-900/10';
-                const blockIndicator = document.createElement('div');
-                blockIndicator.className = 'absolute inset-0 flex items-center justify-center pointer-events-none opacity-20';
-                blockIndicator.innerHTML = `<span class="text-[10px] font-black text-red-600 uppercase rotate-12 border-2 border-red-600 px-1 rounded">${blockLabel}</span>`;
-                cell.appendChild(blockIndicator);
+            if (blockObj) {
+                let isCurrentCellBlocked = false;
+                let currentBlockLabel = '';
+                if (typeof blockObj === 'string') {
+                    isCurrentCellBlocked = true;
+                    currentBlockLabel = blockObj;
+                } else if (blockObj.hours && blockObj.hours.includes(hIdx)) {
+                    isCurrentCellBlocked = true;
+                    currentBlockLabel = blockObj.label;
+                }
+
+                if (isCurrentCellBlocked) {
+                    cell.className += ' bg-red-100/30 dark:bg-red-900/10';
+                    const blockIndicator = document.createElement('div');
+                    blockIndicator.className = 'absolute inset-0 flex items-center justify-center pointer-events-none opacity-20';
+                    blockIndicator.innerHTML = `<span class="text-[10px] sm:text-xs font-black text-red-600 uppercase rotate-12 border-2 border-red-600 px-1 rounded">${currentBlockLabel}</span>`;
+                    cell.appendChild(blockIndicator);
+                }
             }
 
             if (cellIsPast) {
@@ -141,17 +192,19 @@ window.renderCalendar = function () {
         const d = new Date(start);
         d.setDate(d.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
-        const blockLabel = window.state.blocks[dateStr];
+        const blockObj = window.state.blocks[dateStr];
 
         if (window.state.viewMode === 'daily' && window.state.activeDate !== dateStr) continue;
 
         const cell = document.createElement('div');
         cell.className = 'border-b border-r border-slate-200 min-h-[40px] bg-slate-50/50 p-1 flex flex-col gap-1';
 
-        if (blockLabel) {
+        if (blockObj) {
             const blockPill = document.createElement('div');
             blockPill.className = 'bg-red-600 text-white text-[9px] px-2 py-1 rounded-full font-black uppercase text-center shadow-sm';
-            blockPill.textContent = `BLOQUEIO: ${blockLabel}`;
+            const label = typeof blockObj === 'string' ? blockObj : blockObj.label;
+            const timeInfo = (blockObj.startTime && blockObj.endTime) ? ` (${blockObj.startTime}-${blockObj.endTime})` : '';
+            blockPill.textContent = `BLOQUEIO: ${label}${timeInfo}`;
             cell.appendChild(blockPill);
         }
 

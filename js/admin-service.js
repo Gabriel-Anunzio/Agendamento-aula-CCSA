@@ -127,8 +127,10 @@ window.renderBlocksList = function () {
 
     sortedMMDD.forEach(mmdd => {
         const fullDate = `${year}-${mmdd}`;
-        const label = holidayKeys[mmdd] || stateKeys[mmdd] || "Bloqueio Customizado";
-        const isBlocked = !!window.state.blocks[fullDate];
+        const blockObj = window.state.blocks[fullDate];
+        const isBlocked = !!blockObj;
+        const label = isBlocked ? (typeof blockObj === 'string' ? blockObj : blockObj.label) : (holidayKeys[mmdd] || "Bloqueio Customizado");
+        const timeInfo = (isBlocked && blockObj.startTime) ? `<span class="block text-[9px] text-red-500 font-bold">${blockObj.startTime} - ${blockObj.endTime}</span>` : '';
 
         const item = document.createElement('div');
         item.className = `flex items-center justify-between p-4 rounded-2xl border transition-all ${isBlocked ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-700'}`;
@@ -141,6 +143,7 @@ window.renderBlocksList = function () {
                 </div>
                 <div>
                     <h4 class="text-sm font-bold text-slate-800 dark:text-white capitalize">${label}</h4>
+                    ${timeInfo}
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${isBlocked ? '⚠️ Horário Bloqueado' : '✅ Horário Disponível'}</p>
                 </div>
             </div>
@@ -152,11 +155,20 @@ window.renderBlocksList = function () {
     });
 };
 
-window.toggleBlock = function (dateStr, label) {
+window.toggleBlock = function (dateStr, label, timedData = null) {
     if (window.state.blocks[dateStr]) {
         delete window.state.blocks[dateStr];
     } else {
-        window.state.blocks[dateStr] = label;
+        if (timedData) {
+            window.state.blocks[dateStr] = {
+                label: label,
+                startTime: timedData.startTime,
+                endTime: timedData.endTime,
+                hours: timedData.hours
+            };
+        } else {
+            window.state.blocks[dateStr] = label;
+        }
     }
     window.saveBlocks();
     window.renderBlocksList();
@@ -178,6 +190,32 @@ window.addCustomBlockPrompt = function () {
     const month = parts[1].padStart(2, '0');
     const label = prompt("Título do Bloqueio (Ex: Recesso Escolar):") || "Bloqueio Manual";
 
+    const isTimed = confirm("Deseja bloquear um horário específico?\n(OK para escolher horário, Cancelar para o dia todo)");
+    
+    let timedData = null;
+    if (isTimed) {
+        const start = prompt("Início (Ex: 19):", "19");
+        const end = prompt("Fim (Ex: 22):", "22");
+        
+        if (start && end) {
+            const hStart = parseInt(start);
+            const hEnd = parseInt(end);
+            const hours = [];
+            for (let i = hStart; i < hEnd; i++) {
+                // Map to indices in window.HOURS (19:00 is index 0)
+                const idx = i - 19;
+                if (idx >= 0 && idx < window.HOURS.length) {
+                    hours.push(idx);
+                }
+            }
+            timedData = {
+                startTime: `${start}:00`,
+                endTime: `${end}:00`,
+                hours: hours
+            };
+        }
+    }
+
     const fullDate = `${year}-${month}-${day}`;
-    window.toggleBlock(fullDate, label);
+    window.toggleBlock(fullDate, label, timedData);
 };
