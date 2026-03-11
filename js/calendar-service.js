@@ -73,7 +73,7 @@ window.renderCalendar = function () {
     const start = new Date(window.state.currentWeekStart);
 
     // Slots
-    window.HOURS.forEach((hLabel, hIdx) => {
+    HOURS.forEach((hLabel, hIdx) => {
         const timeCell = document.createElement('div');
         timeCell.className = 'border-b border-r border-slate-200 dark:border-slate-800 p-2 text-[10px] sm:text-xs text-slate-400 text-right sticky left-0 bg-white dark:bg-slate-900 z-10';
         timeCell.innerHTML = `<span class="-mt-2 block">${hLabel.split(' - ')[0]}</span>`;
@@ -84,6 +84,7 @@ window.renderCalendar = function () {
             d.setDate(d.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
             const cellIsPast = window.isDatePast(dateStr);
+            const blockLabel = window.state.blocks[dateStr];
 
             // Skip other columns in daily mode
             const isActive = window.state.activeDate === dateStr;
@@ -92,6 +93,14 @@ window.renderCalendar = function () {
             const cell = document.createElement('div');
             cell.className = 'border-b border-r border-slate-200 dark:border-slate-800 min-h-[60px] relative transition p-1 flex flex-col gap-1 ' +
                 (cellIsPast ? 'bg-slate-100/60 dark:bg-slate-800/40 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer');
+
+            if (blockLabel) {
+                cell.className += ' bg-red-100/30 dark:bg-red-900/10';
+                const blockIndicator = document.createElement('div');
+                blockIndicator.className = 'absolute inset-0 flex items-center justify-center pointer-events-none opacity-20';
+                blockIndicator.innerHTML = `<span class="text-[10px] font-black text-red-600 uppercase rotate-12 border-2 border-red-600 px-1 rounded">${blockLabel}</span>`;
+                cell.appendChild(blockIndicator);
+            }
 
             if (cellIsPast) {
                 const lockIcon = document.createElement('div');
@@ -122,7 +131,7 @@ window.renderCalendar = function () {
         }
     });
 
-    // Events Row
+    // Events Row (Special visual for blocked days in events row too)
     const eventTimeCell = document.createElement('div');
     eventTimeCell.className = 'border-b border-r border-slate-200 p-2 text-[10px] sm:text-xs text-red-600 font-bold text-right sticky left-0 bg-slate-50 z-10';
     eventTimeCell.textContent = 'EVENTOS';
@@ -132,16 +141,19 @@ window.renderCalendar = function () {
         const d = new Date(start);
         d.setDate(d.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
+        const blockLabel = window.state.blocks[dateStr];
 
-        // Skip other days if in daily mode
-        if (window.state.viewMode === 'daily' && window.state.activeDate !== dateStr) {
-            // Continue? No, we need to handle the loop correctly.
-            // Actually, the easiest way is to just NOT append the cell if in daily and not today.
-            continue;
-        }
+        if (window.state.viewMode === 'daily' && window.state.activeDate !== dateStr) continue;
 
         const cell = document.createElement('div');
         cell.className = 'border-b border-r border-slate-200 min-h-[40px] bg-slate-50/50 p-1 flex flex-col gap-1';
+
+        if (blockLabel) {
+            const blockPill = document.createElement('div');
+            blockPill.className = 'bg-red-600 text-white text-[9px] px-2 py-1 rounded-full font-black uppercase text-center shadow-sm';
+            blockPill.textContent = `BLOQUEIO: ${blockLabel}`;
+            cell.appendChild(blockPill);
+        }
 
         (window.state.events[dateStr] || []).forEach((evtText, evtIdx) => {
             const pill = document.createElement('div');

@@ -16,6 +16,7 @@ window.state = {
     activeDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
     assignments: {},
     events: {},
+    blocks: {}, // { "YYYY-MM-DD": "Label" }
 };
 
 window.editingSlot = null;

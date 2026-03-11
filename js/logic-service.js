@@ -110,6 +110,13 @@ window.handleFormSubmit = function (e) {
 
     if (!teacher || !subject) return;
 
+    // Check if day is blocked
+    if (window.state.blocks[dateStr]) {
+        window.dom.errorMsg.textContent = `Erro: Este dia está bloqueado (${window.state.blocks[dateStr]})`;
+        window.dom.errorMsg.classList.remove('hidden');
+        return;
+    }
+
     let finalType = type;
     if (course === 'ADMIN' && window.dom.adminIsCommon.checked) finalType = 'common';
 

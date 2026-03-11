@@ -16,7 +16,26 @@ window.init = function () {
     window.renderCalendar();
     window.setupFirebaseListeners();
     window.setupMobileSync();
+    // 4. Attach Date Select Listeners
+    if (window.dom.monthSelect) window.dom.monthSelect.onchange = window.handleDateSelectChange;
+    if (window.dom.yearSelect) window.dom.yearSelect.onchange = window.handleDateSelectChange;
+
     if (window.lucide) window.lucide.createIcons();
+};
+
+window.handleDateSelectChange = function () {
+    const y = parseInt(window.dom.yearSelect.value);
+    const m = parseInt(window.dom.monthSelect.value);
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day;
+        return new Date(d.setDate(diff));
+    }
+    const newDate = new Date(y, m, 1);
+    window.state.currentWeekStart = getStartOfWeek(newDate);
+    window.state.activeDate = newDate.toISOString().split('T')[0];
+    window.renderCalendar();
 };
 
 // Global Events

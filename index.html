@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <title>Agendamento de Aulas</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -53,11 +54,19 @@
             --shadow-premium: 0 20px 25px -5px rgb(204 24 30 / 0.1), 0 8px 10px -6px rgb(204 24 30 / 0.1);
         }
 
+        html,
+        body {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--slate-50);
             color: var(--slate-800);
             letter-spacing: -0.011em;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* Glassmorphism Classes */
@@ -101,6 +110,12 @@
         @media (max-width: 1023px) {
             .week-grid {
                 grid-template-columns: 55px repeat(7, minmax(130px, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .week-grid {
+                grid-template-columns: 50px repeat(7, minmax(110px, 1fr));
             }
         }
 
@@ -201,7 +216,8 @@
         </div>
 
         <!-- Top bar -->
-        <div class="max-w-[1920px] mx-auto flex flex-row justify-between items-center px-5 py-4 sm:py-5">
+        <div
+            class="max-w-[1920px] mx-auto flex flex-col sm:flex-row justify-between items-center px-4 sm:px-5 py-3 sm:py-5 gap-4">
             <!-- Branding -->
             <div id="desktop-logo" class="flex items-center gap-4 group cursor-default">
                 <div
@@ -224,39 +240,41 @@
             </div>
 
             <!-- Global Actions -->
-            <div class="flex items-center gap-3 sm:gap-6">
+            <div class="flex items-center justify-center sm:justify-end gap-2 sm:gap-6 w-full sm:w-auto">
                 <!-- View Mode Toggle -->
                 <div
-                    class="flex items-center bg-white/10 dark:bg-black/20 rounded-2xl p-1 border border-white/10 shadow-inner group">
+                    class="flex items-center bg-white/10 dark:bg-black/20 rounded-2xl p-0.5 border border-white/10 shadow-inner group">
                     <button id="view-weekly-btn" onclick="window.setViewMode('weekly')"
-                        class="flex-1 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 bg-white text-red-600 shadow-lg">Semana</button>
+                        class="px-3 py-1.5 sm:px-4 sm:py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 bg-white text-red-600 shadow-lg">Semana</button>
                     <button id="view-daily-btn" onclick="window.setViewMode('daily')"
-                        class="flex-1 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 text-red-100 hover:bg-white/10">Dia</button>
+                        class="px-3 py-1.5 sm:px-4 sm:py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 text-red-100 hover:bg-white/10">Dia</button>
                 </div>
                 <!-- Navigation Pack -->
-                <div class="flex items-center bg-black/15 rounded-2xl p-1.5 border border-white/10 shadow-inner">
+                <div class="flex items-center bg-black/15 rounded-2xl p-1 border border-white/10 shadow-inner">
                     <button onclick="goToToday()"
-                        class="btn-premium px-5 py-2.5 text-[11px] uppercase tracking-widest hover:bg-white/10 rounded-xl transition">Hoje</button>
-                    <div class="w-px h-5 bg-white/20 mx-1.5"></div>
+                        class="btn-premium px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-[11px] uppercase tracking-widest hover:bg-white/10 rounded-xl transition">Hoje</button>
+                    <div class="w-px h-4 sm:h-5 bg-white/20 mx-1"></div>
                     <button onclick="changeWeek(-1)"
-                        class="btn-premium p-2.5 hover:bg-white/10 rounded-xl transition-all"><i
-                            data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        class="btn-premium p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-all"><i
+                            data-lucide="chevron-left" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
                     <button onclick="changeWeek(1)"
-                        class="btn-premium p-2.5 hover:bg-white/10 rounded-xl transition-all"><i
-                            data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                        class="btn-premium p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-all"><i
+                            data-lucide="chevron-right" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
                 </div>
 
-                <button onclick="window.toggleTheme()"
-                    class="btn-premium w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl shadow-xl transition-all active:bg-white/30 flex items-center justify-center"
-                    id="theme-toggle" title="Alternar Modo Escuro">
-                    <i data-lucide="moon" class="w-5 h-5 sm:w-6 sm:h-6" id="theme-icon"></i>
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="window.toggleTheme()"
+                        class="btn-premium w-10 h-10 sm:w-12 sm:h-12 bg-white/10 border border-white/20 rounded-2xl shadow-xl transition-all flex items-center justify-center"
+                        id="theme-toggle">
+                        <i data-lucide="moon" class="w-4 h-4 sm:w-6 sm:h-6" id="theme-icon"></i>
+                    </button>
 
-                <button onclick="openAdminLogin()"
-                    class="btn-premium w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl shadow-xl transition-all active:bg-white/30"
-                    title="Configurações Admin">
-                    <i data-lucide="settings" class="w-5 h-5 sm:w-6 sm:h-6"></i>
-                </button>
+                    <button onclick="openAdminLogin()"
+                        class="btn-premium w-10 h-10 sm:w-12 sm:h-12 bg-white/10 border border-white/20 rounded-2xl shadow-xl transition-all"
+                        title="Configurações Admin">
+                        <i data-lucide="settings" class="w-4 h-4 sm:w-6 sm:h-6"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -264,19 +282,18 @@
         <div class="bg-black/5 dark:bg-black/20 px-5 py-3 sm:py-4 border-t border-white/10">
             <div class="max-w-[1920px] mx-auto flex flex-col xl:flex-row items-stretch xl:items-center gap-4">
                 <!-- Stage Switcher -->
-                <div
-                    class="flex-1 flex bg-black/20 rounded-2xl p-1.5 gap-1.5 overflow-x-auto no-scrollbar shadow-inner">
+                <div class="flex-1 flex bg-black/20 rounded-2xl p-1 gap-1 overflow-x-auto no-scrollbar shadow-inner">
                     <button onclick="switchStage(1)" id="stage-btn-1"
-                        class="btn-premium flex-1 px-6 py-3 text-[12px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
+                        class="btn-premium flex-1 px-4 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
                         1</button>
                     <button onclick="switchStage(2)" id="stage-btn-2"
-                        class="btn-premium flex-1 px-6 py-3 text-[12px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
+                        class="btn-premium flex-1 px-4 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
                         2</button>
                     <button onclick="switchStage(3)" id="stage-btn-3"
-                        class="btn-premium flex-1 px-6 py-3 text-[12px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
+                        class="btn-premium flex-1 px-4 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
                         3</button>
                     <button onclick="switchStage(4)" id="stage-btn-4"
-                        class="btn-premium flex-1 px-6 py-3 text-[12px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
+                        class="btn-premium flex-1 px-4 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-[13px] font-black rounded-xl whitespace-nowrap transition-all duration-500 uppercase tracking-tight">Etapa
                         4</button>
                 </div>
 
@@ -284,10 +301,10 @@
                 <div class="hidden xl:block w-px h-8 bg-white/10"></div>
 
                 <!-- Date Selection Section -->
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 sm:gap-3">
                     <div class="flex-1 xl:flex-none relative group">
                         <select id="month-select"
-                            class="w-full btn-premium appearance-none bg-white text-gray-900 px-6 py-3.5 pr-12 text-[13px] font-black rounded-2xl border-none shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)] cursor-pointer outline-none focus:ring-2 focus:ring-red-400">
+                            class="w-full btn-premium appearance-none bg-white text-gray-900 px-4 sm:px-6 py-2.5 sm:py-3.5 pr-10 text-[11px] sm:text-[13px] font-black rounded-2xl border-none shadow-md cursor-pointer outline-none focus:ring-2 focus:ring-red-400">
                             <option value="0">JANEIRO</option>
                             <option value="1">FEVEREIRO</option>
                             <option value="2">MARÇO</option>
@@ -302,12 +319,12 @@
                             <option value="11">DEZEMBRO</option>
                         </select>
                         <i data-lucide="chevron-down"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600 pointer-events-none transition-transform group-hover:translate-y-[-40%]"></i>
+                            class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-red-600 pointer-events-none transition-transform group-hover:translate-y-[-40%]"></i>
                     </div>
 
                     <div class="relative group">
                         <select id="year-select"
-                            class="btn-premium appearance-none bg-white text-gray-900 px-8 py-3.5 text-[13px] font-black rounded-2xl border-none shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)] cursor-pointer outline-none focus:ring-2 focus:ring-red-400">
+                            class="btn-premium appearance-none bg-white text-gray-900 px-5 sm:px-8 py-2.5 sm:py-3.5 text-[11px] sm:text-[13px] font-black rounded-2xl border-none shadow-md cursor-pointer outline-none focus:ring-2 focus:ring-red-400">
                             <option value="2026">2026</option>
                             <option value="2027">2027</option>
                             <option value="2028">2028</option>
@@ -323,7 +340,7 @@
         <main class="flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900 shadow-2xl relative">
             <!-- Day Headers (Sticky) -->
             <div id="week-header"
-                class="grid grid-cols-[65px_repeat(7,1fr)] border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur z-30 shadow-sm">
+                class="grid grid-cols-[50px_repeat(7,1fr)] sm:grid-cols-[65px_repeat(7,1fr)] min-w-[850px] sm:min-w-[1100px] border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur z-30 shadow-sm overflow-hidden">
                 <div class="border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50"></div>
                 <div id="header-sun" class="border-r border-slate-200 dark:border-slate-800 p-2 sm:p-3 text-center">
                 </div>
@@ -342,7 +359,8 @@
 
             <!-- Scrollable Grid Area -->
             <div id="calendar-scroll" class="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-950/30">
-                <div id="week-grid" class="week-grid min-w-[1100px] border-b border-slate-200 dark:border-slate-800">
+                <div id="week-grid"
+                    class="week-grid min-w-[850px] sm:min-w-[1100px] border-b border-slate-200 dark:border-slate-800">
                     <!-- Data cells generated by JS -->
                 </div>
             </div>
@@ -353,7 +371,8 @@
             class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-md">
             <div
                 class="glass-white dark:bg-slate-900 dark:border-slate-700 dark:text-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh] border border-white/50">
-                <div class="px-8 py-6 border-b border-slate-200/60 flex justify-between items-center bg-white/50">
+                <div
+                    class="px-5 sm:px-8 py-4 sm:py-6 border-b border-slate-200/60 flex justify-between items-center bg-white/50">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
                             <i data-lucide="plus-circle" class="text-red-600 w-6 h-6"></i>
@@ -371,7 +390,7 @@
                     </button>
                 </div>
 
-                <div class="p-8 overflow-y-auto custom-scroll">
+                <div class="p-5 sm:p-8 overflow-y-auto custom-scroll">
                     <!-- Existing Items List -->
                     <div id="existing-items" class="mb-8 space-y-4"></div>
 
@@ -649,45 +668,47 @@
                         </button>
                     </div>
 
-                    <!-- Academic Grid Management -->
-                    <div class="border-b border-slate-200 dark:border-slate-800 pb-6 mb-6">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">
-                            Gerenciar Grade Acadêmica</h4>
-                        <p class="text-xs text-slate-500 mb-4">Adicione ou remova cursos e disciplinas da listagem
-                            principal.</p>
-                        <button onclick="openGridManager()"
-                            class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-slate-800 hover:text-white transition flex items-center gap-2">
-                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Abrir Gerenciador de Grade
+                    </button>
+                </div>
+
+                <div class="border-b border-slate-200 dark:border-slate-800 pb-6 mb-6">
+                    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wide">
+                        Bloqueios de Horário</h4>
+                    <p class="text-xs text-slate-500 mb-4">Gerencie feriados e dias sem aula para bloquear agendamentos.
+                    </p>
+                    <button onclick="openBlocksModal()"
+                        class="px-4 py-2 bg-red-600 text-white border border-red-700 rounded-lg text-xs font-bold hover:bg-red-700 transition flex items-center gap-2 shadow-sm">
+                        <i data-lucide="lock" class="w-3.5 h-3.5"></i> Bloqueios de Feriados
+                    </button>
+                </div>
+
+                <hr class="mb-6 border-slate-100 dark:border-slate-800">
+
+                <!-- Add Event -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">Adicionar Evento
+                        Especial
+                    </h4>
+                    <form id="admin-event-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Título do
+                                Evento</label>
+                            <input type="text" id="event-text" required placeholder="Ex: Evento Business 9 horas"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Data</label>
+                            <input type="date" id="event-date" required
+                                class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
+                        </div>
+                        <button type="submit"
+                            class="w-full py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-sm font-bold transition">
+                            Agendar Evento
                         </button>
-                    </div>
-
-                    <hr class="mb-6 border-slate-100">
-
-                    <!-- Add Event -->
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">Adicionar Evento
-                            Especial
-                        </h4>
-                        <form id="admin-event-form" class="space-y-4">
-                            <div>
-                                <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Título do
-                                    Evento</label>
-                                <input type="text" id="event-text" required placeholder="Ex: Evento Business 9 horas"
-                                    class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Data</label>
-                                <input type="date" id="event-date" required
-                                    class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 text-sm focus:ring-2 focus:ring-primary focus:outline-none">
-                            </div>
-                            <button type="submit"
-                                class="w-full py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-sm font-bold transition">
-                                Agendar Evento
-                            </button>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- Grid Manager Modal -->
@@ -809,6 +830,58 @@
                                 ao Curso Selecionado</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloqueios Modal -->
+        <div id="blocks-modal"
+            class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[130] p-4 backdrop-blur-md">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-800">
+                <div
+                    class="px-5 sm:px-8 py-4 sm:py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center">
+                            <i data-lucide="lock" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">
+                                Bloqueios de Horário</h2>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">• Feriados e
+                                Ausências</p>
+                        </div>
+                    </div>
+                    <button onclick="closeBlocksModal()"
+                        class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors">
+                        <i data-lucide="x" class="w-6 h-6 text-slate-400"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 bg-slate-100/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex gap-4 items-center">
+                        <div class="flex-1">
+                            <select id="blocks-year-filter" onchange="renderBlocksList()"
+                                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm font-bold outline-none">
+                                <option value="2026">Ano 2026</option>
+                                <option value="2027">Ano 2027</option>
+                            </select>
+                        </div>
+                        <button onclick="addCustomBlockPrompt()"
+                            class="bg-slate-800 dark:bg-slate-100 dark:text-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-black transition flex items-center gap-2">
+                            <i data-lucide="calendar-plus" class="w-4 h-4"></i> Bloqueio Customizado
+                        </button>
+                    </div>
+                </div>
+
+                <div id="blocks-list" class="flex-1 overflow-auto p-5 sm:p-8 space-y-3">
+                    <!-- Blocks will be injected here -->
+                </div>
+
+                <div
+                    class="px-8 py-5 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                    <button onclick="closeBlocksModal()"
+                        class="px-6 py-2.5 bg-slate-800 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-black transition-all">Fechar</button>
                 </div>
             </div>
         </div>

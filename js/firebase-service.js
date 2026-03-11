@@ -57,7 +57,6 @@ window.setupFirebaseListeners = function () {
         const data = snapshot.val();
         if (data) {
             window.COMMON_SUBJECTS = data;
-            // Refresh Grid Manager if open
             const gmModal = document.getElementById('grid-manager-modal');
             if (gmModal && !gmModal.classList.contains('hidden') && window.gmActiveAxis === 'common') {
                 window.renderGMSubjects();
@@ -66,36 +65,46 @@ window.setupFirebaseListeners = function () {
     }, (error) => {
         console.error("Firebase Sync Error (Common):", error);
     });
+
+    // Listen for Blocks
+    db.ref('blocks').on('value', (snapshot) => {
+        window.state.blocks = snapshot.val() || {};
+        window.syncLocalStorage();
+        window.renderCalendar();
+    });
 };
 
 window.saveAssignments = function () {
     if (sessionStorage.getItem('mack_access') !== 'granted') return;
-    window.syncLocalStorage(); // Immediate local save
+    window.syncLocalStorage();
     window.db.ref('assignments').set(window.state.assignments);
 };
 
 window.saveEvents = function () {
     if (sessionStorage.getItem('mack_access') !== 'granted') return;
-    console.log("Tentando salvar eventos...", window.state.events);
-    window.db.ref('events').set(window.state.events)
-        .then(() => console.log("Eventos salvos com sucesso!"))
-        .catch((err) => {
-            console.error("FALHA AO SALVAR EVENTOS:", err);
-            alert("Erro ao salvar evento: " + err.message);
-        });
+    window.db.ref('events').set(window.state.events);
+};
+
+window.saveBlocks = function () {
+    if (sessionStorage.getItem('mack_access') !== 'granted') return;
+    window.syncLocalStorage();
+    window.db.ref('blocks').set(window.state.blocks);
 };
 
 window.syncLocalStorage = function () {
     localStorage.setItem('agenda_assignments', JSON.stringify(window.state.assignments));
     localStorage.setItem('agenda_events', JSON.stringify(window.state.events));
+    localStorage.setItem('agenda_blocks', JSON.stringify(window.state.blocks));
 };
 
 window.restoreFromPersistence = function () {
     try {
         const cachedAssignments = localStorage.getItem('agenda_assignments');
         const cachedEvents = localStorage.getItem('agenda_events');
+        const cachedBlocks = localStorage.getItem('agenda_blocks');
         if (cachedAssignments) window.state.assignments = JSON.parse(cachedAssignments);
         if (cachedEvents) window.state.events = JSON.parse(cachedEvents);
+        if (cachedBlocks) window.state.blocks = JSON.parse(cachedBlocks);
     } catch (e) {
         console.warn("Persistence Restore Error:", e);
     }

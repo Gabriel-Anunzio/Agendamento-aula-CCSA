@@ -165,3 +165,41 @@ for (let h = HOURS_START; h < HOURS_END; h++) {
 window.PASS_GLOBAL_ENCODED = 'Y2NzYW1hY2tlbnppZQ==';
 window.PASS_ADMIN_ENCODED = 'QW51bnppbw==';
 window.PASS_DELETE_ENCODED = 'bWFja2Vuemll';
+
+window.HOLIDAYS = {
+    "2026": {
+        "01-01": "Confraternização Universal",
+        "01-25": "Aniversário de São Paulo",
+        "02-16": "Carnaval (Facultativo)",
+        "02-17": "Carnaval",
+        "02-18": "Quarta-feira de Cinzas",
+        "04-03": "Sexta-feira Santa",
+        "04-21": "Tiradentes",
+        "05-01": "Dia do Trabalho",
+        "06-04": "Corpus Christi",
+        "07-09": "Revolução Constitucionalista",
+        "09-07": "Independência do Brasil",
+        "10-12": "Nossa Senhora Aparecida",
+        "11-02": "Finados",
+        "11-15": "Proclamação da República",
+        "11-20": "Consciência Negra",
+        "12-25": "Natal"
+    },
+    "2027": {
+        "01-01": "Confraternização Universal",
+        "01-25": "Aniversário de São Paulo",
+        "02-08": "Carnaval (Facultativo)",
+        "02-09": "Carnaval",
+        "03-26": "Sexta-feira Santa",
+        "04-21": "Tiradentes",
+        "05-01": "Dia do Trabalho",
+        "05-27": "Corpus Christi",
+        "07-09": "Revolução Constitucionalista",
+        "09-07": "Independência do Brasil",
+        "10-12": "Nossa Senhora Aparecida",
+        "11-02": "Finados",
+        "11-15": "Proclamação da República",
+        "11-20": "Consciência Negra",
+        "12-25": "Natal"
+    }
+};
