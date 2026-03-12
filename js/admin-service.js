@@ -219,3 +219,104 @@ window.addCustomBlockPrompt = function () {
     const fullDate = `${year}-${month}-${day}`;
     window.toggleBlock(fullDate, label, timedData);
 };
+
+window.exportReport = async function () {
+    const assignments = window.state.assignments;
+    if (!assignments || Object.keys(assignments).length === 0) {
+        window.showToast("Nenhum dado encontrado para exportar.");
+        return;
+    }
+
+    window.showToast("Gerando relatório Excel...");
+
+    try {
+        const workbook = XLSX.utils.book_new();
+
+        const monthNames = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+
+        // Preparar dados para a planilha
+        const rows = [];
+        // Cabeçalho solicitado pelo usuário:
+        // Coluna A: Nome curso
+        // Coluna B: Nome da disciplina
+        // Coluna C: Etapa que foi agendado
+        // Coluna D: Nome Professor
+        // Coluna E: Mês
+        // Coluna F: Data
+        // Coluna G: Hora
+        rows.push(["Nome curso", "Nome da disciplina", "Etapa", "Nome Professor", "Mês", "Data", "Hora"]);
+
+        // Ordenar chaves para garantir ordem cronológica
+        const keys = Object.keys(assignments).sort((a, b) => {
+            const partsA = a.split('-');
+            const partsB = b.split('-');
+            const dateA = new Date(`${partsA[1]}-${partsA[2]}-${partsA[3]}T00:00:00`);
+            const dateB = new Date(`${partsB[1]}-${partsB[2]}-${partsB[3]}T00:00:00`);
+            if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+            if (partsA[0] !== partsB[0]) return partsA[0] - partsB[0];
+            return partsA[partsA.length - 1] - partsB[partsB.length - 1];
+        });
+
+        keys.forEach(key => {
+            const parts = key.split('-');
+            const stageId = parts[0];
+            const dateStr = `${parts[1]}-${parts[2]}-${parts[3]}`;
+            const hourIdx = parts[parts.length - 1];
+            const hourRange = window.HOURS[parseInt(hourIdx)];
+            if (!hourRange) return; // Skip if hour index is invalid
+            
+            const fullHourRange = hourRange.replace(/(\d{2}:\d{2})/g, "$1:00");
+
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const dayOnly = dateObj.getDate();
+            const monthName = monthNames[dateObj.getMonth()];
+
+            assignments[key].forEach(it => {
+                // Remover prefixos do professor (Prof., Dra., Me., etc)
+                let cleanTeacherName = it.teacher
+                    .replace(/^(PROF\.|DRA\.|DR\.|ME\.|CAPT\.|EMB\.|ENG\.|GEN\.|COM\.|AGENT|LID\.|TECH\.|CONSELHEIRO|INST\.|OFF\.|DOCK MASTER|STWD\.|ADV\.|ARQ\.|SCOUT|PILOT|SPEC\.|PHO\.|IA)\s+/i, '')
+                    .trim();
+
+                rows.push([
+                    it.type === 'common' ? 'EIXO COMUM' : (it.courseName || 'N/A'),
+                    it.subject,
+                    parseInt(stageId), // Apenas o número da etapa como dado numérico
+                    cleanTeacherName,
+                    monthName,
+                    dayOnly, // Apenas o dia
+                    fullHourRange // Hora completa com segundos
+                ]);
+            });
+        });
+
+        // Criar worksheet
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+
+        // Configurar larguras das colunas
+        ws['!cols'] = [
+            { wch: 30 }, // Curso
+            { wch: 40 }, // Disciplina
+            { wch: 10 }, // Etapa
+            { wch: 25 }, // Professor
+            { wch: 15 }, // Mês
+            { wch: 12 }, // Data
+            { wch: 17 }  // Hora (increased for full format)
+        ];
+
+        XLSX.utils.book_append_sheet(workbook, ws, "Relatório Geral");
+
+        // Exportar arquivo
+        const fileName = `Relatorio_Agendamento_Simplificado_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+
+        window.showToast("Relatório Excel exportado com sucesso!");
+
+    } catch (err) {
+        console.error("Erro na exportação:", err);
+        alert("Erro ao exportar Excel: " + err.message);
+    }
+};
+

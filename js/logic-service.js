@@ -110,8 +110,8 @@ window.handleFormSubmit = function (e) {
 
     if (!teacher || !subject) return;
 
-    // Check if day is blocked
-    if (window.state.blocks[dateStr]) {
+    // Check if day is blocked (Admins can bypass)
+    if (window.state.blocks[dateStr] && course !== 'ADMIN') {
         window.dom.errorMsg.textContent = `Erro: Este dia está bloqueado (${window.state.blocks[dateStr]})`;
         window.dom.errorMsg.classList.remove('hidden');
         return;

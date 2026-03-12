@@ -89,6 +89,7 @@ window.openEditModal = function (dateStr, hIdx) {
         window.dom.form.classList.add('hidden');
         if (pastUnlockSelect) {
             pastUnlockSelect.innerHTML = '<option value="">-- Selecione --</option>' +
+                '<option value="ADMIN">ADMIN (Liberar todos)</option>' +
                 (Object.keys(window.ACADEMIC_GRID[window.state.activeStage] || {})).map(cName => `<option value="${cName}">${cName}</option>`).join('');
         }
         window.dom.editModal.classList.remove('hidden');
